@@ -9,6 +9,8 @@ import Navbar from './components/Navbar';
 import Followers from './components/Followers.tsx';
 import ProfileLayout from './components/Layouts/ProfileLayout.tsx';
 import AuthorBlogs from './components/AuthorBlogs.tsx';
+import Registration from './pages/registration.tsx';
+import Login from './pages/Login.tsx';
 
 function App() {
 
@@ -30,8 +32,12 @@ function App() {
 
             <Route path='/profile' element={<ProfileLayout />}>
               <Route index path='/profile/:authorProfile' element={<AuthorBlogs />} />
-              <Route path='/profile/:type/:authorProfile' element={<Followers/>} />
+              <Route path='/profile/:type/:authorProfile' element={<Followers />} />
             </Route>
+
+            {/* Authencation Pages Routes */}
+            <Route path='/register' element={<Registration />} />
+            <Route path='/login' element={<Login />} />
           </Routes>
         </div>
       </Router>
