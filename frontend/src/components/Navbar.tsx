@@ -4,7 +4,7 @@ import { FaRegUser } from "react-icons/fa6";
 import { PiSignOut } from "react-icons/pi";
 
 import ProfileImage from '/profile-example-2.png'
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 
 const Navbar = () => {

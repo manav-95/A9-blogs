@@ -36,13 +36,6 @@ const blogs: Blog[] = [
 const BlogDetails = () => {
     const [isLoading, setIsLoading] = useState(true);
 
-    // const [visibilityCount, setvisibilityCount] = useState(2);
-
-    // const showMore = () => {
-    //     setvisibilityCount((prevCount) => prevCount + 3); // Show 3 more items on click
-    // };
-
-
     const { blogId } = useParams<string>();
 
     const blog = blogs.find((b) => b.heading === blogId);
@@ -55,19 +48,19 @@ const BlogDetails = () => {
     return (
         <>
             <div className="max-w-5xl mx-auto px-4 py-10">
-                
+
                 <h1 className="text-6xl capitalize font-semibold text-pretty text-center">{blog.heading}</h1>
                 <p className="my-5 text-lg font-medium text-center text-gray-700 ">{blog.smallDescription}</p>
                 <div className="flex justify-between items-center mb-2">
-                <Link to={`/profile/${blog.authorName}`} className='group flex items-center justify-start space-x-2'>
-                    <img
-                        src={blog.profileImage}
-                        alt={blog.authorName}
-                        className='h-9 w-9 object-cover rounded-sm aspect-square bg-gray-100'
-                    />
-                    <h1 className='font-medium text-lg text-gray-600 group-hover:text-gray-900 group-hover:underline'>{blog.authorName}</h1>
-                </Link>
-                <p className="text-lg font-medium text-gray-600 flex justify-self-end">{blog.createdAt}</p>
+                    <Link to={`/profile/${blog.authorName}`} className='group flex items-center justify-start space-x-2'>
+                        <img
+                            src={blog.profileImage}
+                            alt={blog.authorName}
+                            className='h-9 w-9 object-cover rounded-sm aspect-square bg-gray-100'
+                        />
+                        <h1 className='font-medium text-lg text-gray-600 group-hover:text-gray-900 group-hover:underline'>{blog.authorName}</h1>
+                    </Link>
+                    <p className="text-lg font-medium text-gray-600 flex justify-self-end">{blog.createdAt}</p>
                 </div>
                 <img
                     src={blog.image}
@@ -79,52 +72,6 @@ const BlogDetails = () => {
 
                 {isLoading && <Skeleton className="aspect-[3/2] mb-10" baseColor="#e0e0e0"
                     highlightColor="#f5f5f5" duration={1.2} enableAnimation={true} />}
-
-                {/* <hr className="border border-black" /> */}
-
-                {/*
-             <div className="mt-6">
-                <h1 className="text-3xl font-semibold uppercase text-center">More Blogs</h1>
-            </div>
-
-
-            <div className='flex flex-col space-y-4'>
-                {blogs.slice(0, visibilityCount).map((blog) => (
-
-                    <Link onClick={() => { window.scrollTo(0, 0) }} to={`/blog/${blog?.heading}`} className='grid grid-cols-12 gap-2 items-start border-b py-6'>
-                        <div className='col-span-8 pl-6'>
-                            <div
-                                key={blog.id}
-                                className='pt-0'
-                            >
-                                <h1 className='font-medium mb-2'>{blog.authorName}</h1>
-                                <h1 className='text-3xl font-semibold mb-5'>{blog.heading}</h1>
-                                <span className='line-clamp-2 text-gray-700 text-lg mb-4'>{blog.smallDescription}</span>
-                                <span className='font-medium'>{blog.createdAt}</span>
-                            </div>
-
-
-                        </div>
-
-                        <div className='col-span-4 px-6'>
-                            <img src={blog.image} alt="Blog Image" className='aspect-[3/2] object-contain' />
-                        </div>
-                    </Link>
-
-                ))}
-            </div>
-
-            {visibilityCount < blogs.length && (
-                
-                <button
-                    onClick={showMore}
-                    className="mt-3 px-4 py-2 bg-blue-500 text-white rounded flex justify-self-end"
-                >
-                    Show More
-                </button>
-            )
-            }
-             */}
 
             </div >
 

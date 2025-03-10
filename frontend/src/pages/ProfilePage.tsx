@@ -3,8 +3,6 @@ import { Link, useParams, useLocation } from "react-router-dom";
 import BlogImage from '/banner-1.jpg'
 import ProfileImage from '/profile-example-2.png'
 
-
-import Skeleton from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
 
 import { BsThreeDots } from "react-icons/bs";
@@ -35,7 +33,7 @@ const blogs: Blog[] = [
 
 const ProfilePage = () => {
 
-    const [isLoading, setIsLoading] = useState(true);
+  
     const [isActive, setisActive] = useState('Home')
 
     const rightSideRef = useRef<HTMLDivElement | null>(null);

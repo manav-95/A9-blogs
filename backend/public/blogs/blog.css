@@ -1,3 +1,12 @@
+/* body {
+    font-family: "Poppins", Arial, Helvetica, sans-serif;
+} */
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+
 
 /* Headings */
 .tiptap-editor h1,
@@ -14,7 +23,7 @@
 
 .tiptap-editor h1 {
     font-size: 2rem;
-    margin-top: 3rem;
+    margin-top: 2.5rem;
     margin-bottom: 1.5rem;
 }
 
@@ -44,7 +53,7 @@
 }
 
 /* Paragraphs */
-.tiptap-editor p {
+.tiptap-editor p, .tiptap-editor span {
     font-size: 1rem;
     margin-bottom: 1rem;
     text-wrap: pretty;

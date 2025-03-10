@@ -6,7 +6,6 @@ import './App.css'
 import BlogDetails from './pages/BlogDetails';
 import AddBlog from './pages/AddBlog';
 import Navbar from './components/Navbar';
-import ProfilePage from './pages/ProfilePage';
 import Followers from './components/Followers.tsx';
 import ProfileLayout from './components/Layouts/ProfileLayout.tsx';
 import AuthorBlogs from './components/AuthorBlogs.tsx';

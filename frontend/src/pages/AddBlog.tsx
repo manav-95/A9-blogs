@@ -1,5 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Tooltip } from "react-tooltip";
+import axios from "axios";
+
+
 
 import '../components/authorBlog.css';
 
@@ -13,12 +16,6 @@ import FontFamily from '@tiptap/extension-font-family'
 import TextAlign from '@tiptap/extension-text-align'
 import { Superscript as Sup } from '@tiptap/extension-superscript'
 import { Subscript as Sub } from '@tiptap/extension-subscript'
-import { Image as Img } from '@tiptap/extension-image'
-import BulletList from '@tiptap/extension-bullet-list'
-import OrderedList from '@tiptap/extension-ordered-list'
-// import Document from '@tiptap/extension-document'
-// import Paragraph from '@tiptap/extension-paragraph'
-// import Text from '@tiptap/extension-text'
 import FontSize from "@/components/FontSize";
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -26,11 +23,19 @@ import StarterKit from '@tiptap/starter-kit'
 
 
 
-import { Bold, ChevronDown, Heading1, Heading2, Heading3, Heading4, Heading5, Highlighter, Italic, Link, Palette, Pilcrow, Redo, Strikethrough, UnderlineIcon, Undo, TextQuote, EllipsisVertical, AlignCenter, AlignLeft, AlignRight, AlignJustify, Superscript, Subscript, Image, List, ListOrdered } from 'lucide-react'
+import { Bold, ChevronDown, Heading1, Heading2, Heading3, Heading4, Heading5, Highlighter, Italic, Link, Palette, Pilcrow, Redo, Strikethrough, UnderlineIcon, Undo, TextQuote, EllipsisVertical, AlignCenter, AlignLeft, AlignRight, AlignJustify, Superscript, Subscript, List, ListOrdered, X } from 'lucide-react'
 
 
 
 const BlogEditor = () => {
+
+    const [tags, setTags] = useState<string[]>([]);
+    const [inputValue, setInputValue] = useState("");
+    const [formData, setFormData] = useState({
+        title: '',
+        tags: [] as string[],
+
+    });
 
     const [toggleColor, setToggleColor] = useState(false);
 
@@ -38,18 +43,22 @@ const BlogEditor = () => {
     const [fontsDropdown, setFontsDropdown] = useState(false);
     const [sizeDropdown, setSizeDropdown] = useState(false);
     const [alignDropdown, setAlignDropdown] = useState(false);
-    const [activeIcon, setActiveIcon] = useState(Pilcrow);
-
-    const CustomImage = Img.extend({
-        renderHTML({ HTMLAttributes }) {
-            return ["figure", { style: "text-align: center;" }, ["img", HTMLAttributes]];
-        },
-    });
+    const [activeIcon, setActiveIcon] = useState<any>(Pilcrow);
+    const [preview, setPreview] = useState<any>(null);
+    const [image, setImage] = useState<any>(null);
 
 
     const savedContent = localStorage.getItem("editorContent");
 
+    let parsedContent = "";
+    try {
+        parsedContent = savedContent ? JSON.parse(savedContent) : "";
+    } catch (error) {
+        console.error("Error parsing saved content:", error);
+    }
+
     const editor = useEditor({
+
         extensions: [
             StarterKit,
             Underline,
@@ -57,42 +66,38 @@ const BlogEditor = () => {
             FontSize,
             Sup,
             Sub,
-            CustomImage,
-            BulletList,
-            OrderedList,
-            TextAlign.configure({
-                types: ['heading', 'paragraph'],
-            }),
+            TextAlign.configure({ types: ['heading', 'paragraph'] }),
             Color.configure({ types: [TextStyle.name, ListItem.name] }),
-            TextStyle.configure({ types: [ListItem.name] }),
+            TextStyle.extend({
+                addOptions() {
+                    return {
+                        ...this.parent?.(),
+                        types: [ListItem.name],
+                    };
+                },
+            }),
             ExLink.configure({
-                openOnClick: true, // Clicking opens the link
-                autolink: true, // Auto-detects links
+                openOnClick: true,
+                autolink: true,
                 HTMLAttributes: {
-                    target: "_blank", // Opens in new tab
+                    target: "_blank",
                     rel: "noopener noreferrer",
                 },
                 defaultProtocol: 'https',
                 protocols: ['http', 'https'],
-                isAllowedUri: () => { return true },
-                shouldAutoLink: () => { return true },
+                isAllowedUri: () => true,
+                shouldAutoLink: () => true,
             }),
             Highlight.configure({ multicolor: true }),
         ],
-
-        content: `
-          <p>
-            Nothing is impossible, the word itself says “I’m possible!”
-          </p>
-          <p>Audrey Hepburn</p>
+        content: parsedContent || `
+            <p>Start Writing Your Blog From Here...</p>
         `,
-
-        content: savedContent ? JSON.parse(savedContent) : "", // Load saved content
         onUpdate: ({ editor }) => {
-            localStorage.setItem("editorContent", JSON.stringify(editor.getJSON())); // Save content
+            localStorage.setItem("editorContent", JSON.stringify(editor.getJSON()));
         },
+    });
 
-    })
 
 
     if (!editor) {
@@ -100,14 +105,14 @@ const BlogEditor = () => {
     }
 
     const textButtons = [
-        { text: 'Paragraph', icon: Pilcrow, onClick: () => { editor.chain().focus().setParagraph().run(); setIcon(Pilcrow); } },
-        { text: 'Heading 1', icon: Heading1, onClick: () => { editor.chain().focus().toggleHeading({ level: 1 }).run(); setIcon(Heading1); } },
-        { text: 'Heading 2', icon: Heading2, onClick: () => { editor.chain().focus().toggleHeading({ level: 2 }).run(); setIcon(Heading2); } },
-        { text: 'Heading 3', icon: Heading3, onClick: () => { editor.chain().focus().toggleHeading({ level: 3 }).run(); setIcon(Heading3); } },
-        { text: 'Heading 4', icon: Heading4, onClick: () => { editor.chain().focus().toggleHeading({ level: 4 }).run(); setIcon(Heading4); } },
-        { text: 'Heading 5', icon: Heading5, onClick: () => { editor.chain().focus().toggleHeading({ level: 5 }).run(); setIcon(Heading5); } },
-        { text: 'Numbered List', icon: ListOrdered, onClick: () => { editor.chain().focus().toggleOrderedList().run(); setIcon(ListOrdered); } },
-        { text: 'Bullet List', icon: List, onClick: () => { editor.chain().focus().toggleBulletList().run(); setIcon(List); } },
+        { text: 'Paragraph', icon: Pilcrow, onClick: () => { editor.chain().focus().setParagraph().run(); } },
+        { text: 'Heading 1', icon: Heading1, onClick: () => { editor.chain().focus().toggleHeading({ level: 1 }).run(); } },
+        { text: 'Heading 2', icon: Heading2, onClick: () => { editor.chain().focus().toggleHeading({ level: 2 }).run(); } },
+        { text: 'Heading 3', icon: Heading3, onClick: () => { editor.chain().focus().toggleHeading({ level: 3 }).run(); } },
+        { text: 'Heading 4', icon: Heading4, onClick: () => { editor.chain().focus().toggleHeading({ level: 4 }).run(); } },
+        { text: 'Heading 5', icon: Heading5, onClick: () => { editor.chain().focus().toggleHeading({ level: 5 }).run(); } },
+        { text: 'Numbered List', icon: ListOrdered, onClick: () => { editor.chain().focus().toggleOrderedList().run(); } },
+        { text: 'Bullet List', icon: List, onClick: () => { editor.chain().focus().toggleBulletList().run(); } },
     ];
 
     const fonts = [
@@ -177,7 +182,6 @@ const BlogEditor = () => {
     };
 
 
-
     const setLink = useCallback(() => {
         const previousUrl = editor?.getAttributes('link').href
         const url = window.prompt('URL', previousUrl)
@@ -205,17 +209,125 @@ const BlogEditor = () => {
     }, [editor])
 
 
-    const addImage = (event: any) => {
-        const file = event.target.files[0];
-        if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = () => {
-            const base64 = reader.result;
-            editor.chain().focus().setImage({ src: base64 }).run();
-        };
-        reader.readAsDataURL(file);
+    // Handle Tag Input
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            if (inputValue.trim() && !tags.includes(inputValue.trim())) {
+                const newTags = [...tags, inputValue.trim()];
+                setTags(newTags);
+                setFormData({ ...formData, tags: newTags });
+            }
+            setInputValue("");
+        }
     };
+
+    // Remove Tag
+    const removeTag = (index: number) => {
+        const newTags = tags.filter((_, i) => i !== index);
+        setTags(newTags);
+        setFormData((prev) => ({ ...prev, tags: newTags }));
+    };
+
+    const handleFileChange = (e: any) => {
+        if (e.target.files.length > 0) {
+            const file:File = e.target.files[0];
+            console.log("type of file",typeof file)
+            setImage(file);
+            setPreview(URL.createObjectURL(file));
+            console.log(preview)
+        }
+    }
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    }
+
+    const preventEnterSubmit = (e: React.KeyboardEvent<HTMLFormElement>) => {
+        if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+            e.preventDefault();
+        }
+    };
+
+
+    const handleSubmit = async (e: any) => {
+        e.preventDefault();
+
+        if (!editor) {
+            alert("Editor is not loaded yet!");
+            return;
+        }
+
+        const content = editor.getHTML().trim(); // Get the editor content
+
+        if (!formData.title.trim()) {
+            alert("Title is required!");
+            return;
+        }
+
+        // Convert HTML content to plain text and count words
+        const plainText = content.replace(/<[^>]+>/g, " ").trim(); // Remove HTML tags
+        const wordCount = plainText.split(/\s+/).filter(word => word.length > 0).length; // Count words
+
+        if (!content || wordCount < 80) {
+            alert(`Content must be at least 80 words! Current: ${wordCount} words.`);
+            return;
+        }
+
+
+        if (tags.length === 0) {
+            alert("Please add at least one tag!");
+            return;
+        }
+
+        const finalData = {
+            title: formData.title.trim(),
+            content: content,  // Include the editor content
+            tags: tags,
+            image: image
+        };
+
+        console.log("Form Data Submitted:", finalData);
+
+        try {
+            const formdata = new FormData();
+            formdata.append("title",finalData.title);
+            formdata.append("content",finalData.content);
+            formdata.append("tags",JSON.stringify(finalData.tags));
+            formdata.append("image",finalData.image);
+            console.log(formData.tags)
+
+            const response = await axios.post("http://localhost:5000/api/blogs",formdata,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                })
+
+            console.log("Blog Created:", response.data);
+            alert("Blog submitted successfully!");
+
+            // Reset form fields after successful submission
+            setTags([]);
+            setInputValue("");
+            setPreview(null);
+
+            setFormData({ title: "", tags: [], });
+            editor.commands.clearContent();
+            localStorage.removeItem("editorContent");
+            e.target.files = [];
+
+        } catch (error: any) {
+            console.error("Error:", error.response ? error.response.data : error.message);
+            alert("Failed to submit blog. Please try again.");
+        }
+    };
+
+
+
+
+
 
 
 
@@ -231,7 +343,6 @@ const BlogEditor = () => {
             <Tooltip id="link-tooltip" place="top" content="Link" />
             <Tooltip id="highlighter-tooltip" place="top" content="Highlighter" />
             <Tooltip id="color-tooltip" place="top" content="Text Color" />
-            <Tooltip id="image-tooltip" place="top" content="Add Image" />
             <Tooltip id="more-tooltip" place="top" content="More Options" />
 
             <Tooltip className="z-50" id="sup-tooltip" place="top" content="Super Script" />
@@ -241,25 +352,66 @@ const BlogEditor = () => {
             <Tooltip className="z-50" id="align-right-tooltip" place="top" content="Align Right" />
             <Tooltip className="z-50" id="align-justify-tooltip" place="top" content="Align Justify" />
 
-            <input
-                type="file"
-                accept="image/*"
-                onChange={addImage}
-                style={{ display: "none" }}
-                id="imageUpload"
-            />
 
             <div className='w-full py-10'>
-
                 <div className='max-w-7xl mx-auto px-4 py-4 bg-white'>
-                    <div className='flex flex-col'>
+
+                    <form onKeyDown={preventEnterSubmit} onSubmit={handleSubmit} className="w-full bg-gray-100 rounded py-4 px-8 mb-8">
+                        <input type="text" name="title" value={formData.title} onChange={handleChange} className="w-full py-1.5 px-4 mb-2" placeholder="Enter Blog Title" required />
+                        <input type="text" value={inputValue} onKeyDown={handleKeyDown} onChange={(e) => setInputValue(e.target.value)} className="w-full py-1.5 px-4 mb-0" placeholder="Enter tags" />
+                        <div className="flex flex-wrap py-4">
+                            {tags.map((tag, index) => (
+                                <div key={index} className="flex items-center space-x-2 border border-green-500 pl-4 pr-1 py-1 rounded-full mr-3 mb-2">
+                                    <span className="text-green-500">{tag}</span>
+                                    <button onClick={() => removeTag(index)} className="bg-red-500 py-1 px-1 rounded-full text-white"><X className="h-4 w-4" /></button>
+                                </div>
+                            ))}
+                        </div>
+
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            required
+                        />
+
+
+
+                        <div className="flex w-full justify-end">
+                            <button
+                                type="submit"
+                                className={`py-2 px-10 text-white rounded
+                                        ${formData.title.trim() && tags.length > 0
+                                        ? "bg-green-500 hover:bg-green-600"
+                                        : "bg-gray-400 cursor-not-allowed"
+                                    }`}
+                                disabled={!formData.title.trim() || tags.length === 0}
+                            >
+                                Publish
+                            </button>
+                        </div>
+                    </form>
+
+                    <div className="max-w-7xl text-4xl font-semibold text-center break-words">
+                        {formData.title}
+                    </div>
+
+
+                    {preview && (
+                        <div className="mt-2 w-full ">
+                            <img src={preview} alt="Preview" className="w-full aspect -[7/4] object-top object-contain rounded" />
+                        </div>
+                    )}
+
+
+
+                    <div className='flex flex-col mt-8'>
                         <div className='w-full flex items-center justify-start py-2 px-2 space-x-1 border-2 rounded'>
                             <button data-tooltip-id="bold-tooltip" onClick={() => editor?.chain().focus().toggleBold().run()} className={`${editor?.isActive('bold') ? 'bg-gray-200 text-black rounded' : 'text-gray-500 hover:bg-gray-100 rounded'} px-4 py-2`}><Bold strokeWidth={3} color={'currentColor'} size={19} /></button>
                             <button data-tooltip-id="italic-tooltip" onClick={() => editor?.chain().focus().toggleItalic().run()} className={`${editor?.isActive('italic') ? 'bg-gray-200 text-black rounded' : 'text-gray-500 hover:bg-gray-100 rounded'} px-4 py-2`}><Italic strokeWidth={3} color={'currentColor'} size={19} /></button>
                             <button data-tooltip-id="strike-tooltip" onClick={() => editor?.chain().focus().toggleStrike().run()} className={`${editor?.isActive('strike') ? 'bg-gray-200 text-black rounded' : 'text-gray-500 hover:bg-gray-100 rounded'} px-4 py-2`}><Strikethrough strokeWidth={3} color={'currentColor'} size={19} /></button>
                             <button data-tooltip-id="underline-tooltip" onClick={() => editor?.chain().focus().toggleUnderline().run()} className={`${editor?.isActive('underline') ? 'bg-gray-200 text-black rounded' : 'text-gray-500 hover:bg-gray-100 rounded'} px-4 py-2`}><UnderlineIcon strokeWidth={3} color={'currentColor'} size={19} /></button>
 
-                            {/* <button onClick={() => editor?.chain().focus().toggleUnderline().run()} className={`${editor?.isActive('underline') ? 'bg-gray-200 text-black rounded' : 'text-gray-500 hover:bg-gray-100 rounded'} px-4 py-2`}><Pilcrow strokeWidth={3} color={'currentColor'} size={19} /></button> */}
                             <div className='relative'>
                                 <button onClick={() => { setOpenPopOver(!openPopOver); setFontsDropdown(false); setSizeDropdown(false); setAlignDropdown(false) }} className='flex items-center bg-gray-100  py-[5.2px] px-2 space-x-2 rounded'>
                                     {React.createElement(activeIcon, { strokeWidth: 2, color: "currentColor", size: 19 })}
@@ -303,13 +455,7 @@ const BlogEditor = () => {
 
                             </div>
 
-                            {/* <button onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()} className={`${editor?.isActive('heading', { level: 1 }) ? 'bg-gray-200 text-black rounded' : 'text-gray-500 hover:bg-gray-100 rounded'} px-4 py-2`}><Heading1 strokeWidth={2} color={'currentColor'} size={20} /></button>
-                            <button onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} className={`${editor?.isActive('heading', { level: 2 }) ? 'bg-gray-200 text-black rounded' : 'text-gray-500 hover:bg-gray-100 rounded'} px-4 py-2`}><Heading2 strokeWidth={2} color={'currentColor'} size={20} /></button>
-                            <button onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} className={`${editor?.isActive('heading', { level: 3 }) ? 'bg-gray-200 text-black rounded' : 'text-gray-500 hover:bg-gray-100 rounded'} px-4 py-2`}><Heading3 strokeWidth={2} color={'currentColor'} size={20} /></button>
-                            <button onClick={() => editor?.chain().focus().toggleHeading({ level: 4 }).run()} className={`${editor?.isActive('heading', { level: 4 }) ? 'bg-gray-200 text-black rounded' : 'text-gray-500 hover:bg-gray-100 rounded'} px-4 py-2`}><Heading4 strokeWidth={2} color={'currentColor'} size={20} /></button>
-                            <button onClick={() => editor?.chain().focus().toggleHeading({ level: 5 }).run()} className={`${editor?.isActive('heading', { level: 5 }) ? 'bg-gray-200 text-black rounded' : 'text-gray-500 hover:bg-gray-100 rounded'} px-4 py-2`}><Heading5 strokeWidth={2} color={'currentColor'} size={20} /></button>
-                            <button onClick={() => editor?.chain().focus().toggleHeading({ level: 6 }).run()} className={`${editor?.isActive('heading', { level: 6 }) ? 'bg-gray-200 text-black rounded' : 'text-gray-500 hover:bg-gray-100 rounded'} px-4 py-2`}><Heading6 strokeWidth={2} color={'currentColor'} size={20} /></button>
-                            //  */}
+
 
                             <div className="relative">
                                 <button onClick={() => { setFontsDropdown(!fontsDropdown); setOpenPopOver(false); setSizeDropdown(false); setAlignDropdown(false) }} className='text-nowrap flex items-center bg-gray-100  py-[5.2px] px-2 space-x-2 rounded'>
@@ -393,10 +539,10 @@ const BlogEditor = () => {
 
                                     if (isColor) {
                                         editor.chain().focus().unsetColor().run();
-                                        setToggleColor(false);
+                                        setToggleColor(false || toggleColor);
                                     } else {
                                         editor.chain().focus().setColor("red").run();
-                                        setToggleColor(true);
+                                        setToggleColor(true || toggleColor);
                                     }
                                 }}
                                 className={`${editor?.isActive("textStyle", { color: "red" })
@@ -406,14 +552,6 @@ const BlogEditor = () => {
                             >
                                 <Palette strokeWidth={3} color={'currentColor'} size={19} />
                             </button>
-
-
-                            <button data-tooltip-id="image-tooltip"
-                                onClick={() => document.getElementById("imageUpload").click()}
-                                className={`px-4 py-2 text-gray-500 hover:bg-gray-100`}>
-                                <Image strokeWidth={3} color={'currentColor'} size={19} />
-                            </button>
-
 
 
                             <div className="relative">
@@ -497,8 +635,10 @@ const BlogEditor = () => {
 
                         </div>
                         {/* <hr className='my-2 border'/> */}
-                        <div className='my-4 tiptap-editor'>
-                            <EditorContent editor={editor} className='bg-white' />
+                        <div className='my-4 tiptap-editor overflow-auto h-[500px]'>
+                            {editor &&
+                                <EditorContent editor={editor} className="" />
+                            }
 
                         </div>
                     </div>
