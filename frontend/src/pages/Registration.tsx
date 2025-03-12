@@ -4,15 +4,19 @@ import { Link, useNavigate } from "react-router-dom";
 
 const Registration = () => {
 
+    const [image, setImage] = useState<any>(null);
+
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
+        username: '',
         email: '',
         password: '',
         confirmPassword: '',
     })
 
     const [errors, setErrors] = useState({
+        username: '',
         email: '',
         password: '',
         confirmPassword: '',
@@ -20,9 +24,13 @@ const Registration = () => {
 
     const validateForm = () => {
         let valid = true;
-        let newErrors = { email: '', password: '', confirmPassword: '' }
+        let newErrors = { username: '', email: '', password: '', confirmPassword: '' }
 
         // Check if fields are empty
+        if (!formData.username.trim()) {
+            newErrors.username = 'Username is required';
+            valid = false;
+        }
         if (!formData.email.trim()) {
             newErrors.email = 'Email is required';
             valid = false;
@@ -58,30 +66,42 @@ const Registration = () => {
         return valid;
     };
 
+    const handleFileChange = (e: any) => {
+        if (e.target.files.length > 0) {
+            const file: File = e.target.files[0];
+            console.log("type of file", typeof file)
+            setImage(file);
+        }
+    }
+
     const handleChange = (e: any) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
     const handleSubmit = async (e: any) => {
+        const role = 'user';
         e.preventDefault();
 
         if (!validateForm()) return;
 
         try {
             const response = await axios.post("http://localhost:5000/api/users/register", {
+                role: role,
+                username: formData.username,
                 email: formData.email,
-                password: formData.password
+                password: formData.password,
+                image: image,
             },
                 {
-                    headers: { "Content-Type": "application/json" }
+                    headers: { "Content-Type": "multipart/form-data", }
                 }
             );
 
             console.log("Response: ", response.data);
 
             // Reset form & errors on success
-            setFormData({ email: '', password: '', confirmPassword: '' });
-            setErrors({ email: '', password: '', confirmPassword: '' });
+            setFormData({ username: '', email: '', password: '', confirmPassword: '' });
+            setErrors({ username: '', email: '', password: '', confirmPassword: '' });
 
             navigate('/login');
 
@@ -99,6 +119,16 @@ const Registration = () => {
                     <h1 className="text-4xl mb-3 text-center">Welcome User</h1>
                     <input
                         type="text"
+                        value={formData.username}
+                        name="username"
+                        placeholder="Enter Username"
+                        onChange={handleChange}
+                        className="w-full bg-gray-100 mb-1 mt-3 py-2 px-4 rounded"
+
+                    />
+                    {errors.username && <p className="text-red-500 text-sm mb-1">{errors.username}</p>}
+                    <input
+                        type="text"
                         value={formData.email}
                         name="email"
                         placeholder="Enter Email"
@@ -107,6 +137,15 @@ const Registration = () => {
 
                     />
                     {errors.email && <p className="text-red-500 text-sm mb-1">{errors.email}</p>}
+                    <input
+                        type="file"
+                        accept="image/*"
+                        name="image"
+                        placeholder="choose Image"
+                        onChange={handleFileChange}
+                        className="w-full bg-gray-100 mb-1 mt-3 py-2 px-4 rounded"
+
+                    />
                     <input
                         type="text"
                         value={formData.password}

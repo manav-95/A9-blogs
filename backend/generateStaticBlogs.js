@@ -51,20 +51,24 @@ const generateBlogs = async () => {
       </head>
       <body>
         <div class="max-w-5xl mx-auto px-4 py-10">
-          <h1 class="text-[56px] font-black leading-[66px] tracking-tight text-[#242424]">${blog.title}</h1>
+          <h1 class="text-[56px] font-black leading-[66px] tracking-tight text-[#242424] break-words">${blog.title}</h1>
           <div class="flex justify-between items-center space-x-2 my-8">
             <div class="flex justify-start items-center space-x-4">
-              <img class="h-16 w-16 rounded-full object-cover object-center" src="${blog.imageUrl}" alt="profile image">
+              <img class="h-16 w-16 rounded-full object-cover object-center" src="${blog.authorImage}" alt="profile image">
               <div class="flex flex-col items-start justify-start -space-y-1">
-                <span class="text-2xl font-medium flex items-center gap-x-4">Author Name <button
+                <span class="text-2xl font-medium flex items-center gap-x-4">${blog.author}<button
                     class="text-sm h-fit px-4 py-0.5 border border-gray-300 text-gray-500 rounded hover:border-black hover:text-black">Follow</button></span>
                 <button class="hover:underline text-base font-medium text-gray-600">300 Followers</button>
               </div>
             </div>
-            <span class="text-xl font-medium self-end text-gray-800">Mar 6, 2025</span>
+            <span class="text-lg font-medium self-end text-gray-800">Mar 6, 2025</span>
           </div>
-      
+
+         <hr class="border">
+
+           <div class="flex justify-center items-center aspect-[3/2]">
           <img class="aspect-[3/2] object-fill bg-gray-50 my-10 rounded-md" src="${blog.imageUrl}" alt="Blog Image" />
+          </div>
           <div class="tiptap-editor">
             ${blog.content}
           </div>

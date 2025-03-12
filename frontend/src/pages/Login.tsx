@@ -49,15 +49,6 @@ const Login = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const refreshAccessToken = async () => {
-        try {
-            const response = await axios.post("http://localhost:5000/api/users/refresh", {}, { withCredentials: true });
-            localStorage.setItem("accessToken", response.data.accessToken);
-        } catch (error: any) {
-            console.error("Refresh token error", error.response?.data?.message || "Error refreshing token");
-        }   
-    };
-
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -67,10 +58,14 @@ const Login = () => {
             const response = await axios.post("http://localhost:5000/api/users/login", {
                 email: formData.email,
                 password: formData.password,
-            }, { withCredentials: true });
+            }, {
+                withCredentials: true,
+            });
 
-            localStorage.setItem("accessToken", response.data.accessToken);
+            localStorage.setItem("accessToken", response.data.user.token);
+            localStorage.setItem("userId", response.data.user._id)
             console.log("Login Successful");
+            console.log("Access Token: ", response.data.user);
 
             // Reset form & errors on success
             setFormData({ email: '', password: '' });

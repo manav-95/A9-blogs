@@ -1,10 +1,11 @@
 import express from 'express'
-import { loginUser, refreshAccessToken, registerUser } from '../controllers/authController.js'
+import upload from '../middlewares/upload.js'
+import { loginUser, registerUser, getUserById } from '../controllers/authController.js'
 
 const router = express.Router();
 
-router.post('/register', registerUser);
+router.post('/register', upload.single("image"), registerUser);
 router.post('/login', loginUser);
-router.post('/refresh', refreshAccessToken);
+router.get('/:id', getUserById);
 
 export default router;

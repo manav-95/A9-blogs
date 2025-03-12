@@ -1,9 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Tooltip } from "react-tooltip";
 import axios from "axios";
-
-
-
 import '../components/authorBlog.css';
 
 import Underline from '@tiptap/extension-underline'
@@ -25,9 +22,8 @@ import StarterKit from '@tiptap/starter-kit'
 
 import { Bold, ChevronDown, Heading1, Heading2, Heading3, Heading4, Heading5, Highlighter, Italic, Link, Palette, Pilcrow, Redo, Strikethrough, UnderlineIcon, Undo, TextQuote, EllipsisVertical, AlignCenter, AlignLeft, AlignRight, AlignJustify, Superscript, Subscript, List, ListOrdered, X } from 'lucide-react'
 
-
-
 const BlogEditor = () => {
+
 
     const [tags, setTags] = useState<string[]>([]);
     const [inputValue, setInputValue] = useState("");
@@ -232,8 +228,8 @@ const BlogEditor = () => {
 
     const handleFileChange = (e: any) => {
         if (e.target.files.length > 0) {
-            const file:File = e.target.files[0];
-            console.log("type of file",typeof file)
+            const file: File = e.target.files[0];
+            console.log("type of file", typeof file)
             setImage(file);
             setPreview(URL.createObjectURL(file));
             console.log(preview)
@@ -249,6 +245,8 @@ const BlogEditor = () => {
             e.preventDefault();
         }
     };
+
+
 
 
     const handleSubmit = async (e: any) => {
@@ -281,27 +279,38 @@ const BlogEditor = () => {
             return;
         }
 
+        const userId = localStorage.getItem('userId') || '';
+
         const finalData = {
             title: formData.title.trim(),
             content: content,  // Include the editor content
             tags: tags,
-            image: image
+            image: image || '',
+            userId: userId,
         };
 
         console.log("Form Data Submitted:", finalData);
 
         try {
             const formdata = new FormData();
-            formdata.append("title",finalData.title);
-            formdata.append("content",finalData.content);
-            formdata.append("tags",JSON.stringify(finalData.tags));
-            formdata.append("image",finalData.image);
-            console.log(formData.tags)
+            formdata.append("title", finalData.title);
+            formdata.append("content", finalData.content);
+            formdata.append("tags", JSON.stringify(finalData.tags));
+            if (finalData.image) {
+                formdata.append("image", finalData.image); // ✅ Only append if not null
+            }
+            formdata.append("userId", finalData.userId);
+            console.log(finalData.userId)
 
-            const response = await axios.post("http://localhost:5000/api/blogs",formdata,
+            const token = localStorage.getItem('accessToken');
+     
+
+
+            const response = await axios.post("http://localhost:5000/api/blogs/create-blog", formdata,
                 {
                     headers: {
                         "Content-Type": "multipart/form-data",
+                        "Authorization": `Bearer ${token}`,
                     },
                 })
 
@@ -321,6 +330,7 @@ const BlogEditor = () => {
         } catch (error: any) {
             console.error("Error:", error.response ? error.response.data : error.message);
             alert("Failed to submit blog. Please try again.");
+
         }
     };
 

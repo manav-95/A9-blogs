@@ -6,6 +6,7 @@ import ProfileImage from '/profile-example-2.png'
 import 'react-loading-skeleton/dist/skeleton.css'
 
 import { BsThreeDots } from "react-icons/bs";
+import axios from "axios";
 
 
 // Define the Blog type
@@ -33,7 +34,7 @@ const blogs: Blog[] = [
 
 const ProfilePage = () => {
 
-  
+    const { authorProfile } = useParams<string>();
     const [isActive, setisActive] = useState('Home')
 
     const rightSideRef = useRef<HTMLDivElement | null>(null);
@@ -46,14 +47,12 @@ const ProfilePage = () => {
         }
     }, [location.pathname]);
 
-    const { authorProfile } = useParams<string>();
 
     const author = blogs.find((a) => a.authorName === authorProfile);
 
     if (!author) {
         return <h2 className="text-center text-red-500 text-xl">Author not found</h2>;
     }
-
 
 
     return (

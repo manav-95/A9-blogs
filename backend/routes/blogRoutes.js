@@ -2,16 +2,24 @@ import express from "express";
 import dotenv from "dotenv"
 import Blog from "../models/Blog.js";
 import upload from '../middlewares/upload.js'
+import auth from '../middlewares/auth.js';
 import generateBlogs from '../generateStaticBlogs.js'
-import path from "path";
-import fs from "fs";
+
+import generateAccessToken from '../controllers/authController.js'
+import User from '../models/User.js'
 
 dotenv.config();
 const router = express.Router();
 
 // Create a new blog
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/create-blog", auth, upload.single("image"), async (req, res) => {
     try {
+        if (req.isExpired === true) {
+            const { userId } = req.body;
+            const newToken = generateAccessToken(userId)
+            User.findByIdAndUpdate(userId, { token: newToken }, { new: true })
+        }
+
         const { title, content, tags } = req.body;
 
         if (!title || !content || !tags.length) {
@@ -19,7 +27,7 @@ router.post("/", upload.single("image"), async (req, res) => {
         }
         const imageUrl = req.file.filename
 
-        const newBlog = new Blog({ title, content, tags, image: imageUrl });
+        const newBlog = new Blog({ title, content, tags, image: imageUrl, userId: req.body.userId });
         await newBlog.save();
         generateBlogs();
 
@@ -33,12 +41,18 @@ router.post("/", upload.single("image"), async (req, res) => {
 
 router.get("/", async (req, res) => {
     try {
-        const blogs = await Blog.find();
+        const blogs = await Blog.find()
+            .populate('userId', 'username email profileImage')
+            .exec();
         const blogsList = blogs.map(blog => ({
             _id: blog._id,
             title: blog.title,
             content: blog.content,
             tags: blog.tags,
+            author: blog.userId ? blog.userId.username : "Unknown",
+            authorImage: blog.userId?.profileImage
+                ? `http://localhost:5000/uploads/${blog.userId.profileImage}`
+                : null,
             imageUrl: `http://localhost:5000/uploads/${blog.image}`,
             createdAt: new Date(blog.createdAt).toLocaleDateString("en-US", {
                 month: "long", // Full month name (e.g., "March")
@@ -49,7 +63,7 @@ router.get("/", async (req, res) => {
         res.json({ blogs: blogsList });
     } catch (error) {
         console.error("❌ Error fetching blogs:", error.message);
-        res.status(500).json({ error: "Internal Server Error" }); 
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
 

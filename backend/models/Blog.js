@@ -17,6 +17,7 @@ const BlogSchema = new mongoose.Schema(
             required: true,
         },
         image: String,
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         createdAt: {
             type: Date,
             default: Date.now, // Auto-generate timestamp
