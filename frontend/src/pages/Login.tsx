@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 
+
 const Login = () => {
     const navigate = useNavigate();
 
@@ -63,7 +64,7 @@ const Login = () => {
             });
 
             localStorage.setItem("accessToken", response.data.user.token);
-            localStorage.setItem("userId", response.data.user._id)
+             localStorage.setItem("userId", response.data.user._id)
             console.log("Login Successful");
             console.log("Access Token: ", response.data.user);
 

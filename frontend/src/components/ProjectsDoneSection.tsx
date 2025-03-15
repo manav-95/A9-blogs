@@ -52,7 +52,7 @@ const creatives = [
 
 
 
-const ProjectsDoneSection = () => {
+const oneSection = () => {
     const [activeTab, setActiveTab] = useState(0);
 
     return (
@@ -131,7 +131,6 @@ const ProjectsDoneSection = () => {
                     <div>
                         <video
                             src='https://ik.imagekit.io/ikmedia/example_video.mp4'
-                            poster={''}
                             width='full'
                             height='680'
                             controls
@@ -148,4 +147,4 @@ const ProjectsDoneSection = () => {
     );
 };
 
-export default ProjectsDoneSection;
+export default oneSection;

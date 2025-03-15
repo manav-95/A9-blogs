@@ -13,6 +13,7 @@ const Registration = () => {
         email: '',
         password: '',
         confirmPassword: '',
+        bio: '',
     })
 
     const [errors, setErrors] = useState({
@@ -20,11 +21,12 @@ const Registration = () => {
         email: '',
         password: '',
         confirmPassword: '',
+        bio: '',
     })
 
     const validateForm = () => {
         let valid = true;
-        let newErrors = { username: '', email: '', password: '', confirmPassword: '' }
+        let newErrors = { username: '', email: '', password: '', confirmPassword: '', bio: '' }
 
         // Check if fields are empty
         if (!formData.username.trim()) {
@@ -41,6 +43,10 @@ const Registration = () => {
         }
         if (!formData.confirmPassword.trim()) {
             newErrors.confirmPassword = 'Confirm Password is required';
+            valid = false;
+        }
+        if (!formData.bio.trim()) {
+            newErrors.bio = 'Bio is required';
             valid = false;
         }
 
@@ -91,6 +97,7 @@ const Registration = () => {
                 email: formData.email,
                 password: formData.password,
                 image: image,
+                bio: formData.bio
             },
                 {
                     headers: { "Content-Type": "multipart/form-data", }
@@ -100,8 +107,8 @@ const Registration = () => {
             console.log("Response: ", response.data);
 
             // Reset form & errors on success
-            setFormData({ username: '', email: '', password: '', confirmPassword: '' });
-            setErrors({ username: '', email: '', password: '', confirmPassword: '' });
+            setFormData({ username: '', email: '', password: '', confirmPassword: '', bio: '' });
+            setErrors({ username: '', email: '', password: '', confirmPassword: '', bio: '' });
 
             navigate('/login');
 
@@ -115,7 +122,7 @@ const Registration = () => {
     return (
         <div className="max-w-7xl mx-auto px-4">
             <div className="flex justify-center items-center w-full min-h-[80vh]">
-                <form onSubmit={handleSubmit} className="bg-white p-6 rounded border flex flex-col w-full max-w-md">
+                <form onSubmit={handleSubmit} className="bg-white p-6 rounded border flex flex-col w-full max-w-xl">
                     <h1 className="text-4xl mb-3 text-center">Welcome User</h1>
                     <input
                         type="text"
@@ -127,6 +134,18 @@ const Registration = () => {
 
                     />
                     {errors.username && <p className="text-red-500 text-sm mb-1">{errors.username}</p>}
+                    <input
+                        type="text"
+                        value={formData.bio}
+                        name="bio"
+                        placeholder="Enter bio [ max 100 letters ]"
+                        maxLength={100}
+                        onChange={handleChange}
+                        className="w-full bg-gray-100 mb-1 mt-3 py-2 px-4 rounded"
+
+                    />
+                    {errors.bio && <p className="text-red-500 text-sm mb-1">{errors.bio}</p>}
+
                     <input
                         type="text"
                         value={formData.email}

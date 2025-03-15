@@ -1,47 +1,38 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import BlogImage from '/banner-1.jpg'
-import ProfileImage from '/profile-example-2.png'
+import axios from "axios";
+
+import { useOutletContext } from "react-router-dom";
 
 
-// Define the Blog type
-interface Blog {
-    id: string;
-    followersCount: string;
-    authorName: string;
-    profileImage: string;
-    createdAt: string;
-    image: string;
-    authorBioTags: string[];
-    heading: string;
-    smallDescription: string;
+type User = {
+    _id: String,
+    username: String,
+    profileImage: String,
+    bio: String,
 }
 
-// Sample blog data (replace with an API call in real usage)
-const blogs: Blog[] = [
-    { id: "0", followersCount: '100', authorName: 'Jhon Doe0', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'The MongoDB Mistake That’s Costing Your Startup Millions 🚀', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    { id: "1", followersCount: '100', authorName: 'Jhon Doe1', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'Top 10 Best React Libraries You Should Try in 2025', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    { id: "2", followersCount: '100', authorName: 'Jhon Doe2', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'React 19: Goodbye to Old Features, Hello to the Future', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    { id: "3", followersCount: '100', authorName: 'Jhon Doe3', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor", "yoasdsad", "dasadasdaso", "asdads"], heading: 'Advanced React Patterns and Best Practices', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    { id: "4", followersCount: '100', authorName: 'Jhon Doe4', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'Express.js Secrets That Senior Developers Don’t Share', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    { id: "5", followersCount: '100', authorName: 'Jhon Doe5', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'My Favourite Software Architecture Patterns', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    { id: "6", followersCount: '100', authorName: 'Jhon Doe6', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: '10 Expert Performance Tips Every Senior JS React Developer Should Know', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    // { id: "7", followersCount: '100', authorName: 'Jhon Doe0', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'The MongoDB Mistake That’s Costing Your Startup Millions 🚀', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    // { id: "8", followersCount: '100', authorName: 'Jhon Doe1', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'Top 10 Best React Libraries You Should Try in 2025', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    // { id: "9", followersCount: '100', authorName: 'Jhon Doe2', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'React 19: Goodbye to Old Features, Hello to the Future', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    // { id: "10", followersCount: '100', authorName: 'Jhon Doe3', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'Advanced React Patterns and Best Practices', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    // { id: "11", followersCount: '100', authorName: 'Jhon Doe4', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'Express.js Secrets That Senior Developers Don’t Share', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    // { id: "12", followersCount: '100', authorName: 'Jhon Doe5', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'My Favourite Software Architecture Patterns', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    // { id: "13", followersCount: '100', authorName: 'Jhon Doe6', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: '10 Expert Performance Tips Every Senior JS React Developer Should Know', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
+type ContextType = {
+    isFollowing: boolean;
+    setIsFollowing: (value: boolean) => void;
+};
 
-];
 
 const Followers = () => {
+    const { isFollowing } = useOutletContext<ContextType>();
+
     const { type } = useParams();
 
     const navigate = useNavigate();
 
     const [isActive, setisActive] = useState(type);
+
+    const [user, setUser] = useState<any>();
+    const [followersCount, setFollowersCount] = useState<number>();
+    const [followingsCount, setFollowingsCount] = useState<number>();
+
+    const [followersList, setFollowersList] = useState<User[]>([]);
+    const [followingsList, setFollowingsList] = useState<User[]>([]);
 
     const rightSideRef = useRef<HTMLDivElement | null>(null);
 
@@ -49,15 +40,28 @@ const Followers = () => {
         setisActive(type)
     }, [type]);
 
-    const { authorProfile } = useParams<string>();
+    const { id } = useParams<string>();
 
-    const author = blogs.find((a) => a.authorName === authorProfile);
+    const fetchUser = async () => {
+        try {
+            const response = await axios.get(`http://localhost:5000/api/users/${id}`);
+            if (response) {
+                setUser(response.data)
+                // console.log("Found User: ", response.data)
+                setFollowersList(response.data.followers);
+                setFollowingsList(response.data.followings);
+                setFollowersCount(response.data.followers.length)
+                setFollowingsCount(response.data.followings.length)
+            }
+        } catch (error) {
 
-    if (!author) {
-        return <h2 className="text-center text-red-500 text-xl">Author not found</h2>;
+        }
     }
 
-    const reversedBlogs = [...blogs].reverse();
+    useEffect(() => {
+        fetchUser();
+    }, [id, isFollowing])
+
 
     return (
         <>
@@ -66,96 +70,92 @@ const Followers = () => {
 
                 <div className="flex justify-start border-b-2 mb-4 sticky top-0 bg-white">
                     <button
-                        onClick={() => { setisActive('followers'); navigate(`/profile/followers/${author.authorName}`) }}
+                        onClick={() => { setisActive('followers'); navigate(`/profile/followers/${user._id}`) }}
                         className={`${isActive === 'followers' ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-black'}  px-6 py-4 text-base font-medium`}
                     >
                         Followers
-                        <span className="ml-1">({author.followersCount})</span>
+                        <span className="ml-1">({followersCount})</span>
                     </button>
 
                     <button
-                        onClick={() => { setisActive('followings'); navigate(`/profile/followings/${author.authorName}`) }}
+                        onClick={() => { setisActive('followings'); navigate(`/profile/followings/${user._id}`) }}
                         className={`${isActive === 'followings' ? 'text-black border-b-2 border-black' : 'text-gray-500 hover:text-black'}  px-6 py-4 text-base font-medium`}
                     >
                         Followings
-                        <span className="ml-1">({author.followersCount})</span>
+                        <span className="ml-1">({followingsCount})</span>
                     </button>
                 </div>
 
                 {isActive === "followers" &&
                     <>
+                        {
+                            followersList.length > 0 ? (
+                                <div className="px-6">
+                                    {followersList.map((follower, index) =>
+                                        <div key={index} className="group flex justify-between items-center space-x-20 border-b-2 pb-4 mt-4">
+                                            <Link to={`/profile/${follower._id}`} className="flex justify-start items-center space-x-4 w-9/12">
+                                                <img
+                                                    src={`http://localhost:5000/uploads/${follower.profileImage}`}
+                                                    alt="Profile Image"
+                                                    className="h-16 w-16 rounded-full bg-gray-100 object-cover aspect-square border"
+                                                />
+                                                <div className="flex flex-col items-start justify-center">
+                                                    <p className="text-lg font-medium">{follower.username}</p>
+                                                    <p className="line-clamp-1 text-gray-600 text-sm">{follower.bio}</p>
+                                                </div>
+                                            </Link>
 
-                        <div className="px-6">
-                            {blogs.map((follower, index) =>
-                                <div key={index} className="group flex justify-between items-center space-x-20 border-b-2 pb-4 mt-4">
-                                    <Link to={`/profile/${follower.authorName}`} className="flex justify-start items-start space-x-4 w-full">
-                                        <img
-                                            src={follower.profileImage}
-                                            alt="Profile Image"
-                                            className="h-14 w-14 rounded bg-gray-100"
-                                        />
-                                        <div className="flex flex-col items-start justify-center">
-                                            <p className="text-lg font-medium">{follower.authorName}</p>
-                                            <p className="line-clamp-1">
-                                                {follower.authorBioTags.map((tag, index) => (
-                                                    <span
-                                                        key={index}
-                                                        className="text-gray-600 text-sm"
-                                                    >
-                                                        {tag} {index !== author.authorBioTags.length - 1 && " | "}
-                                                    </span>
-                                                ))}
-                                            </p>
+                                            <div>
+                                                <Link to={`/profile/${follower._id}`} className="py-2 px-4 rounded-sm bg-[#4bb543] text-white">see Profile</Link>
+                                            </div>
                                         </div>
-                                    </Link>
-
-                                    <div>
-                                        <button className="py-2 px-4 rounded bg-[#4bb543] text-white">Follow</button>
-                                    </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
+                            ) : (
+                                <div className="flex justify-center items-center mt-10">
+                                    <span className="text-xl">This Author has no Followers</span>
+                                </div>
+                            )
+                        }
                     </>
                 }
+
 
 
                 {isActive === "followings" &&
                     <>
+                        {followingsList.length > 0 ? (
+                            <div className="px-6">
+                                {followingsList.map((follower, index) =>
+                                    <div key={index} className="group flex justify-between items-center space-x-20 border-b-2 pb-4 mt-4">
+                                        <Link to={`/profile/${follower._id}`} className="flex justify-start items-center space-x-4 w-9/12">
+                                            <img
+                                                src={`http://localhost:5000/uploads/${follower.profileImage}`}
+                                                alt="Profile Image"
+                                                className="h-16 w-16 rounded-full bg-gray-100 object-cover aspect-square border"
+                                            />
+                                            <div className="flex flex-col items-start justify-center">
+                                                <p className="text-lg font-medium">{follower.username}</p>
+                                                <p className="line-clamp-1 text-gray-600 text-sm">{follower.bio}</p>
+                                            </div>
+                                        </Link>
 
-                        <div className="px-6">
-                            {reversedBlogs.map((follower, index) =>
-                                <div key={index} className="group flex justify-between items-center space-x-20 border-b-2 pb-4 mt-4">
-                                    <Link to={`/profile/${follower.authorName}`} className="flex justify-start items-start space-x-4 w-full">
-                                        <img
-                                            src={follower.profileImage}
-                                            alt="Profile Image"
-                                            className="h-14 w-14 rounded bg-gray-100"
-                                        />
-                                        <div className="flex flex-col items-start justify-center">
-                                            <p className="text-lg font-medium">{follower.authorName}</p>
-                                            <p className="line-clamp-1">
-                                                {follower.authorBioTags.map((tag, index) => (
-                                                    <span
-                                                        key={index}
-                                                        className="text-gray-600 text-sm"
-                                                    >
-                                                        {tag} {index !== author.authorBioTags.length - 1 && " | "}
-                                                    </span>
-                                                ))}
-                                            </p>
+                                        <div>
+                                            <Link to={`/profile/${follower._id}`} className="py-2 px-4 rounded-sm bg-[#4bb543] text-white">see Profile</Link>
                                         </div>
-                                    </Link>
-
-                                    <div>
-                                        <button className="py-2 px-4 rounded bg-[#4bb543] text-white">Follow</button>
                                     </div>
-                                </div>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="flex justify-center items-center mt-10">
+                                <span className="text-xl">This Author has no Followings</span>
+                            </div>
+                        )
+                        }
                     </>
                 }
 
-            </div>
+            </div >
 
         </>
     )

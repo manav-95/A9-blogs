@@ -6,6 +6,10 @@ const UserSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    bio: {
+        type: String,
+        required: true,
+    },
     email: {
         type: String,
         required: true,
@@ -20,6 +24,8 @@ const UserSchema = new mongoose.Schema({
         enum: ['user', 'admin'],
         default: 'user',
     },
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    followings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     profileImage: {
         type: String,
         required: true,

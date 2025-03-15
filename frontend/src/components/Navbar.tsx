@@ -1,27 +1,27 @@
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
+
+// Icons
 import { FiEdit } from "react-icons/fi";
 import { HiMiniMagnifyingGlass } from "react-icons/hi2";
 import { FaRegUser } from "react-icons/fa6";
 import { PiSignOut } from "react-icons/pi";
 
-import DefaultProfileImage from '/profile-example-2.png'
-
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
-import axios from "axios";
-import { jwtDecode } from "jwt-decode";
-
-
 const Navbar = () => {
     const navigate = useNavigate();
 
     const [loggedIn, setLoggedIn] = useState<boolean>(false);
-    const [profileImage, setProfileImage] = useState<string>(DefaultProfileImage);
+    const [profileImage, setProfileImage] = useState<string>('');
     const [isPopoverVisible, setPopoverVisible] = useState<boolean>(false)
-
     const [user, setUser] = useState<any>({});
 
     const popOverRef = useRef<HTMLDivElement>(null);
 
+
+    // Close PopOver when Click outside PopOver
     useEffect(() => {
         const handleClickOutside = (event: any) => {
             if (popOverRef.current && !popOverRef.current.contains(event.target)) {
@@ -38,17 +38,19 @@ const Navbar = () => {
         };
     }, []);
 
-    const LoggedInUser = async (userId: string) => {
-        const token = localStorage.getItem('accessToken');
 
+    const fetchLoggedInUser = async (userId: any) => {
+        const id = typeof userId === 'object' ? userId._id : userId;
+        const token = localStorage.getItem('accessToken');
+      //  console.log(userId)
         if (!token) return;
 
         try {
-            const response = await axios.get(`http://localhost:5000/api/users/${userId}`);
+            const response = await axios.get(`http://localhost:5000/api/users/${id}`);
 
             if (response.data) {
                 setUser(response.data);
-                console.log("User Data: ", response.data);
+                // console.log("User Data: ", response.data);
             }
 
             // Set profile image if available
@@ -70,11 +72,12 @@ const Navbar = () => {
 
             try {
                 const decoded: any = jwtDecode(token);
-                console.log("✅ Decoded Token: ", decoded);
+               // console.log("✅ Decoded Token: ", decoded);
 
                 if (decoded?.id || decoded?._id) {
-                    LoggedInUser(decoded.id || decoded._id);
-                } else {
+                    fetchLoggedInUser(decoded?.id || decoded?._id); // Pass directly
+                }
+                else {
                     console.error("❌ No user ID found in token");
                 }
             } catch (error) {
@@ -87,6 +90,7 @@ const Navbar = () => {
     }, []);
 
 
+    // If the user is logged then only he can write blogs else it navigate to login
     const handleWrite = () => {
         if (loggedIn) {
             navigate('/add-blog');
@@ -115,16 +119,16 @@ const Navbar = () => {
                     <div className="flex items-center justify-center space-x-8">
 
                         <button
-                         onClick={() => navigate(`/`)}
-                         className="text-xl text-gray-500"
-                            >
+                            onClick={() => navigate(`/`)}
+                            className="text-xl text-gray-500"
+                        >
                             Home
                         </button>
 
                         <button
-                         onClick={() => navigate(`/blogs`)}
-                         className="text-xl text-gray-500"
-                            >
+                            onClick={() => navigate(`/blogs`)}
+                            className="text-xl text-gray-500"
+                        >
                             Blogs
                         </button>
 
@@ -151,18 +155,18 @@ const Navbar = () => {
                                     <img
                                         src={profileImage}
                                         alt="profile"
-                                        className="h-full w-full rounded-md aspect-square object-cover object-top"
+                                        className="h-full w-full border rounded-md aspect-square object-cover object-top"
 
                                     />
                                 </button>
                                 {isPopoverVisible &&
                                     <div className="absolute min-w-80 -left-64 top-14 bg-white shadow px-4">
-                                        <div className="flex items-center justify-start px-4 space-x-3 text-gray-500 hover:text-gray-900">
+                                        <Link onClick={() => setPopoverVisible(false)} to={`/profile/${user?._id}`} className="w-full flex items-center justify-start px-4 space-x-3 text-gray-500 hover:text-gray-900">
                                             <FaRegUser className="h-5 w-5" />
-                                            <p className="text-lg font-medium py-5">Profile</p>
-                                        </div>
+                                            <span className="text-lg font-medium py-5">Profile</span>
+                                        </Link>
                                         <hr className="border" />
-                                        <button onClick={handleLogout} className="flex flex-col items-start py-4 px-4 group w-full">
+                                        <button onClick={() => { handleLogout(); setPopoverVisible(false) }} className="flex flex-col items-start py-4 px-4 group w-full">
                                             <h1 className="flex items-center text-lg font-medium text-gray-500 group-hover:text-gray-900 mb-1.5"><PiSignOut className="h-6 w-6 mr-2" /> Sign Out</h1>
                                             <p className=" text-gray-500">{user?.email}</p>
                                         </button>

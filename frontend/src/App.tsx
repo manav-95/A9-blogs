@@ -12,7 +12,10 @@ import Registration from './pages/Registration.tsx';
 import Login from './pages/Login.tsx';
 
 
+
 import './App.css'
+
+
 
 function App() {
 
@@ -34,8 +37,8 @@ function App() {
               {/* <Route path='/followers/:authorFollowers' element={<Followers />} /> */}
 
               <Route path='/profile' element={<ProfileLayout />}>
-                <Route index path='/profile/:authorProfile' element={<AuthorBlogs />} />
-                <Route path='/profile/:type/:authorProfile' element={<Followers />} />
+                <Route index path='/profile/:id' element={<AuthorBlogs />} />
+                <Route path='/profile/:type/:id' element={<Followers />} />
               </Route>
 
               {/* Authencation Pages Routes */}
@@ -44,7 +47,6 @@ function App() {
             </Routes>
           </div>
       </Router>
-
     </>
   )
 }

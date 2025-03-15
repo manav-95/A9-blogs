@@ -1,40 +1,118 @@
 import { Link, useParams } from "react-router-dom";
-import BlogImage from '/banner-1.jpg'
-import ProfileImage from '/profile-example-2.png'
 
-import { BsThreeDots } from "react-icons/bs";
+// import { BsThreeDots } from "react-icons/bs";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
-
-// Define the Blog type
-interface Blog {
-    id: string;
-    followersCount: string;
-    authorName: string;
-    profileImage: string;
-    createdAt: string;
-    image: string;
-    authorBioTags: string[];
-    heading: string;
-    smallDescription: string;
+type User = {
+    _id: String,
+    username: String,
+    profileImage: String,
 }
 
-// Sample blog data (replace with an API call in real usage)
-const blogs: Blog[] = [
-    { id: "0", followersCount: '100', authorName: 'Jhon Doe0', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'The MongoDB Mistake That’s Costing Your Startup Millions 🚀', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    { id: "1", followersCount: '100', authorName: 'Jhon Doe1', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'Top 10 Best React Libraries You Should Try in 2025', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    { id: "2", followersCount: '100', authorName: 'Jhon Doe2', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'React 19: Goodbye to Old Features, Hello to the Future', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    { id: "3", followersCount: '100', authorName: 'Jhon Doe3', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'Advanced React Patterns and Best Practices', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    { id: "4", followersCount: '100', authorName: 'Jhon Doe4', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'Express.js Secrets That Senior Developers Don’t Share', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    { id: "5", followersCount: '100', authorName: 'Jhon Doe5', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: 'My Favourite Software Architecture Patterns', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },
-    { id: "6", followersCount: '100', authorName: 'Jhon Doe6', profileImage: ProfileImage, createdAt: 'Feb 27, 2025', image: BlogImage, authorBioTags: ["MERN Stack", "Full-Stack Developer", "Blogger", "Open Source Contributor"], heading: '10 Expert Performance Tips Every Senior JS React Developer Should Know', smallDescription: 'Hey there, fellow developers! I’m Sachin, and today I want to share some of my favorite React component libraries that can make your development process smoother and more efficient. Whether you’re building dashboards,', },];
+type ProfileProps = {
+    isFollowing: boolean;
+    setIsFollowing: (value: boolean) => void;
+};
 
 
-const Profile = () => {
+const Profile = ({ isFollowing, setIsFollowing }: ProfileProps) => {
+
+    const [author, setAuthor] = useState<any>({});
+    const [profileImage, setProfileImage] = useState<any>();
+    // const [isFollowing, setIsFollowing] = useState<boolean>();
+     const [followersCount, setFollowersCount] = useState<number>();
+    const [followingList, setFollowingList] = useState<User[]>([]);
 
 
-    const { authorProfile } = useParams<string>();
+    const { id } = useParams<string>();
+    const currentUserId = localStorage.getItem("userId");
 
-    const author = blogs.find((a) => a.authorName === authorProfile);
+    const fetchUser = async () => {
+        if (!id) return;
+        try {
+            const user = await axios.get(`http://localhost:5000/api/users/${id}`)
+            if (user) {
+                //  console.log("Found User: ", user)
+                setAuthor(user.data);
+                setFollowingList(user.data.followings)
+                setFollowersCount(user.data.followers.length)
+                setProfileImage(user.data.profileImage ? `http://localhost:5000/uploads/${user.data.profileImage}` : null);
+            } else {
+                console.log("User not found")
+            }
+        } catch (error: any) {
+            console.log("Error: ", error.message)
+        }
+    }
+
+    useEffect(() => {
+        fetchUser();
+    }, [id])
+
+    const checkFollowingStatus = async () => {
+        if (!currentUserId || !id) return;
+        try {
+            const response = await axios.get(`http://localhost:5000/api/users/${currentUserId}`);
+            if (response) {
+                //console.log("check following status response :", response.data);
+                const isCurrentlyFollowing = response.data.followings.some(
+                    (user: any) => user._id === id
+                );
+    
+                setIsFollowing(isCurrentlyFollowing);
+                console.log("isCurrentlyFollowing: ", isCurrentlyFollowing)
+            }
+
+        } catch (error) {
+            console.error('Error checking follow status:', error);
+        }
+    };
+
+    // ✅ Check Following Status
+    useEffect(() => {
+        checkFollowingStatus();
+    }, [id, currentUserId]);
+
+
+    // Follow User
+    const handleFollow = async () => {
+        if (!currentUserId) return;
+        try {
+            const { data } = await axios.put(`http://localhost:5000/api/users/follow/${id}`, {
+                userId: currentUserId,
+            });
+            console.log("followed: ", data);
+
+            setIsFollowing(true);
+           await checkFollowingStatus();
+           await fetchUser();
+
+
+        } catch (error) {
+            console.error('Error following user:', error);
+        }
+    }
+
+    // Unfollow User
+    const handleUnFollow = async () => {
+        if (!currentUserId) return;
+        try {
+            const { data } = await axios.put(`http://localhost:5000/api/users/unfollow/${id}`, {
+                userId: currentUserId,
+            });
+            console.log(data.message);
+
+            setIsFollowing(false);
+            await checkFollowingStatus();
+            await fetchUser();
+
+
+        } catch (error) {
+            console.error('Error unfollowing user:', error);
+        }
+    }
+
 
     if (!author) {
         return <h2 className="text-center text-red-500 text-xl">Author not found</h2>;
@@ -47,62 +125,71 @@ const Profile = () => {
 
                 <div className="flex items-center justify-start space-x-4">
                     <img
-                        src={author.profileImage}
-                        alt={author.authorName}
-                        className="h-24 w-24 rounded-full"
+                        src={profileImage}
+                        alt={author.username}
+                        className="h-24 w-24 rounded-full aspect-square object-cover border"
                     />
                     <div className="">
-                        <h1 className="text-2xl font-medium">{author.authorName}</h1>
-                        <Link to={`/profile/followers/${author.authorName}`} className="text-lg text-gray-600 hover:text-gray-800">{author.followersCount} Followers</Link>
+                        <h1 className="text-2xl font-medium">{author.username}</h1>
+                        <Link to={`/profile/followers/${author._id}`} className="text-lg text-gray-600 hover:text-gray-800">{followersCount} Followers</Link>
                     </div>
                 </div>
 
 
-
                 <div className="mt-4">
-                    {author.authorBioTags.map((tag, index) => (
-                        <span
-                            key={index}
-                            className="text-gray-600 text-base"
-                        >
-                            {tag} {index !== author.authorBioTags.length - 1 && " | "}
-                        </span>
-                    ))}
+                    <span className="text-gray-500 text-base font-medium">{author.bio}</span>
                 </div>
 
-                <div className="flex justify-end mt-3">
-                    <button className="border border-black py-1 px-4 rounded-sm hover:bg-black hover:text-white transition-all saturate-75">Follow</button>
-                </div>
+                {id !== currentUserId && (
+                    <div className="flex justify-end mt-3">
+                        <button
+                            onClick={() => {
+                                if (isFollowing === true) {
+                                    handleUnFollow();
+                                } else {
+                                    handleFollow()
+                                }
+                            }}
+                            className="border border-black py-1 px-4 rounded-sm hover:bg-black hover:text-white transition-all saturate-75"
+                        >
+                            {isFollowing === true ? 'unFollow' : 'Follow'}
+                        </button>
+                    </div>
+                )}
 
             </div>
 
             <hr className="my-4 border" />
 
-            <div className="pr-4">
-                <h1 className="text-2xl font-medium">Following</h1>
-                <div className="flex flex-col  justify-center space-y-4 mt-4">
-                    {blogs.slice(0, 5).map((follower) => (
-                        <div className="flex justify-between items-center">
-                            <Link
-                                to={`/profile/${follower.authorName}`}
-                                key={follower.id}
-                                className="group flex items-center space-x-3 hover:underline w-full"
-                            >
-                                <img
-                                    src={follower.profileImage}
-                                    alt={'follower Profile Image'}
-                                    className="h-8 w-8 rounded bg-gray-200"
-                                />
-                                <h1 className="text-gray-600 group-hover:text-gray-900 text-lg">{follower.authorName}</h1>
-                            </Link>
-                            <button><BsThreeDots className="h-6 w-6 text-gray-500 hover:text-gray-900" /></button>
-                        </div>
-                    ))}
+            {followingList?.length > 0 &&
+                <div className="pr-4">
+                    <h1 className="text-2xl font-medium">Following</h1>
+                    <div className="flex flex-col  justify-center space-y-2 mt-4">
+                        {followingList.slice(0, 5).map((followingUser) => (
+                            <div className="flex justify-between items-center">
+                                <Link to={`/profile/${followingUser?._id}`}>
+                                    <div
+                                        className="group flex items-center space-x-3 hover:underline w-full"
+                                    >
+                                        <img
+                                            src={`http://localhost:5000/uploads/${followingUser.profileImage}`}
+                                            alt={'follower Profile Image'}
+                                            className="h-12 w-12 rounded-full object-cover aspect-square border"
+                                        />
+                                        <h1 className="text-gray-600 group-hover:text-gray-900 text-base">{followingUser.username}</h1>
+                                    </div>
+                                </Link>
+                                {/* <button><BsThreeDots className="h-6 w-6 text-gray-500 hover:text-gray-900" /></button> */}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex justify-end mt-6">
+                        <Link to={`/profile/followings/${author._id}`} className="text-lg text-gray-600 hover:text-gray-800">see all ({followingList.length})</Link>
+                    </div>
+
                 </div>
-                <div className="flex justify-end mt-6">
-                <Link to={`/profile/followings/${author.authorName}`} className="text-lg text-gray-600 hover:text-gray-800">see all ({author.followersCount})</Link>
-                </div>
-            </div>
+            }
 
         </>
     )

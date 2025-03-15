@@ -37,7 +37,7 @@ const Blogs = () => {
             <Link to={`http://localhost:5000/blogs/${blog._id}.html`}>
               <div className='grid grid-cols-12 gap-2 items-start border-b py-6'>
                 <div key={blog?._id} className='col-span-8 '>
-                  <Link to={`/profile/${blog.author}`}>
+                  <Link to={`/profile/${blog.authorId}`}>
                     <div className='flex items-center justify-start space-x-3 mb-2'>
                       <img
                         src={`${blog.authorImage}`}
