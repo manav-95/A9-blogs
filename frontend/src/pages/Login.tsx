@@ -3,7 +3,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 
 
-const Login = () => {
+const Login = ({ setLoggedIn }: { setLoggedIn: (state: boolean) => void }) => {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -64,9 +64,10 @@ const Login = () => {
             });
 
             localStorage.setItem("accessToken", response.data.user.token);
-             localStorage.setItem("userId", response.data.user._id)
+            localStorage.setItem("userId", response.data.user._id)
             console.log("Login Successful");
             console.log("Access Token: ", response.data.user);
+            setLoggedIn(true);
 
             // Reset form & errors on success
             setFormData({ email: '', password: '' });

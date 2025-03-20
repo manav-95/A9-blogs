@@ -47,7 +47,7 @@ const generateBlogs = async () => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>${blog.title}</title>
-        <meta name="description" content="[" sdsd","sds","ds","dsd"]">
+        <meta name="description" content='${blog.tags}'>
       </head>
       <body>
         <div class="max-w-5xl mx-auto px-4 py-10">
@@ -56,12 +56,11 @@ const generateBlogs = async () => {
             <div class="flex justify-start items-center space-x-4">
               <img class="h-16 w-16 rounded-full object-cover object-center" src="${blog.authorImage}" alt="profile image">
               <div class="flex flex-col items-start justify-start -space-y-1">
-                <span class="text-2xl font-medium flex items-center gap-x-4">${blog.author}<button
-                    class="text-sm h-fit px-4 py-0.5 border border-gray-300 text-gray-500 rounded hover:border-black hover:text-black">Follow</button></span>
-                <button class="hover:underline text-base font-medium text-gray-600">300 Followers</button>
+                <span class="text-2xl font-medium flex items-center gap-x-4">${blog.author}</span>
+                <span class=" text-base font-medium text-gray-600">${blog.authorFollowers} followers</span>
               </div>
             </div>
-            <span class="text-lg font-medium self-end text-gray-800">Mar 6, 2025</span>
+            <span class="text-lg font-medium self-end text-gray-800">${blog.createdAt}</span>
           </div>
 
          <hr class="border">

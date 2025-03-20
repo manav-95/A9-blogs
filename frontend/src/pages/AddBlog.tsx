@@ -337,10 +337,6 @@ const BlogEditor = () => {
 
 
 
-
-
-
-
     return (
         <>
             <Tooltip id="undo-tooltip" place="top" content="Undo" />
@@ -371,8 +367,8 @@ const BlogEditor = () => {
                         <input type="text" value={inputValue} onKeyDown={handleKeyDown} onChange={(e) => setInputValue(e.target.value)} className="w-full py-1.5 px-4 mb-0" placeholder="Enter tags" />
                         <div className="flex flex-wrap py-4">
                             {tags.map((tag, index) => (
-                                <div key={index} className="flex items-center space-x-2 border border-green-500 pl-4 pr-1 py-1 rounded-full mr-3 mb-2">
-                                    <span className="text-green-500">{tag}</span>
+                                <div key={index} className="flex items-center space-x-2 bg-gray-200 pl-4 pr-1 py-1 rounded-full mr-3 mb-2">
+                                    <span className="text-black">{tag}</span>
                                     <button onClick={() => removeTag(index)} className="bg-red-500 py-1 px-1 rounded-full text-white"><X className="h-4 w-4" /></button>
                                 </div>
                             ))}
@@ -383,6 +379,7 @@ const BlogEditor = () => {
                             accept="image/*"
                             onChange={handleFileChange}
                             required
+                            className='bg-white w-full py-1.5 px-2 mb-2'
                         />
 
 

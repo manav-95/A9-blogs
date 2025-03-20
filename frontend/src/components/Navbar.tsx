@@ -10,10 +10,10 @@ import { HiMiniMagnifyingGlass } from "react-icons/hi2";
 import { FaRegUser } from "react-icons/fa6";
 import { PiSignOut } from "react-icons/pi";
 
-const Navbar = () => {
+const Navbar = ({ loggedIn, setLoggedIn }: { loggedIn: boolean, setLoggedIn: (state: boolean) => void }) => {
+   
     const navigate = useNavigate();
-
-    const [loggedIn, setLoggedIn] = useState<boolean>(false);
+    // const [loggedIn, setLoggedIn] = useState<boolean>(false);
     const [profileImage, setProfileImage] = useState<string>('');
     const [isPopoverVisible, setPopoverVisible] = useState<boolean>(false)
     const [user, setUser] = useState<any>({});
@@ -42,7 +42,7 @@ const Navbar = () => {
     const fetchLoggedInUser = async (userId: any) => {
         const id = typeof userId === 'object' ? userId._id : userId;
         const token = localStorage.getItem('accessToken');
-      //  console.log(userId)
+        //  console.log(userId)
         if (!token) return;
 
         try {
@@ -72,7 +72,7 @@ const Navbar = () => {
 
             try {
                 const decoded: any = jwtDecode(token);
-               // console.log("✅ Decoded Token: ", decoded);
+                // console.log("✅ Decoded Token: ", decoded);
 
                 if (decoded?.id || decoded?._id) {
                     fetchLoggedInUser(decoded?.id || decoded?._id); // Pass directly
@@ -87,7 +87,7 @@ const Navbar = () => {
         } else {
             setLoggedIn(false);
         }
-    }, []);
+    }, [loggedIn]);
 
 
     // If the user is logged then only he can write blogs else it navigate to login

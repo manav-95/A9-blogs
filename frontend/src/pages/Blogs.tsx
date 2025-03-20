@@ -42,7 +42,7 @@ const Blogs = () => {
                       <img
                         src={`${blog.authorImage}`}
                         alt={'author profile'}
-                        className='h-11 w-11 object-cover rounded-full aspect-square'
+                        className='h-11 w-11 object-cover rounded-full aspect-square border'
                       />
                       <h1 className='text-lg line-clamp-1'>{blog.author}</h1>
                     </div>

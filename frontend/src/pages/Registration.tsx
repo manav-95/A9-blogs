@@ -64,7 +64,7 @@ const Registration = () => {
 
         // Confirm Password Check
         if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = "Passwords do not match";
+            newErrors.confirmPassword = "Passwords does not match";
             valid = false;
         }
 

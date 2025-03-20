@@ -42,7 +42,7 @@ router.post("/create-blog", auth, upload.single("image"), async (req, res) => {
 router.get("/", async (req, res) => {
     try {
         const blogs = await Blog.find()
-            .populate('userId', 'username email profileImage')
+            .populate('userId', 'username email profileImage followers')
             .exec();
         const blogsList = blogs.map(blog => ({
             _id: blog._id,
@@ -51,6 +51,7 @@ router.get("/", async (req, res) => {
             tags: blog.tags,
             author: blog.userId ? blog.userId.username : "Unknown",
             authorId: blog.userId._id,
+            authorFollowers: blog.userId.followers.length,
             authorImage: blog.userId?.profileImage
                 ? `http://localhost:5000/uploads/${blog.userId.profileImage}`
                 : null,
