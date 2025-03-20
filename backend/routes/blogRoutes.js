@@ -39,6 +39,34 @@ router.post("/create-blog", auth, upload.single("image"), async (req, res) => {
 });
 
 
+router.post('/blog/:id', upload.single("image"), async (req, res) => {
+    try {
+        const { id } = req.params;
+        let editedBlog = await Blog.findById(id);
+        const { title, content, tags } = req.body;
+
+        if (!title || !content || !tags.length) {
+            return res.status(400).json({ error: "All fields are required" });
+        }
+        const imageUrl = req.body.image
+
+        editedBlog = new Blog({ title, content, tags, image: imageUrl, userId: req.body.userId });
+        await editedBlog.save();
+        generateBlogs();
+
+        res.status(201).json({ message: "Blog Edited successfully!", blog: editedBlog, imageUrl: `/uploads/${imageUrl}` });
+    } catch (error) {
+        console.error("❌ Error saving blog:", error.message, error); // Log full error
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+
+
+
+
+
 router.get("/", async (req, res) => {
     try {
         const blogs = await Blog.find()
@@ -83,6 +111,22 @@ router.get('/:id', async (req, res) => {
     } catch (error) {
         console.error("Error fetching blogs:", error);
         res.status(500).json({ message: "Server error" });
+    }
+})
+
+
+router.get('/blog/:id', async (req, res) => {
+    try {
+
+        const { id } = req.params;
+        const blog = await Blog.findById(id);
+        if (!blog) {
+            return res.status(404).json({ message: "Blog Not Found" })
+        }
+        res.status(200).json(blog);
+    } catch (error) {
+        console.error("Error fetching Requested blog:", error);
+        res.status(500).json({ message: "Server Error" })
     }
 })
 

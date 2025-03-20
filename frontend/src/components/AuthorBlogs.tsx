@@ -3,7 +3,7 @@ import { Link, useParams, useLocation } from "react-router-dom";
 import axios from "axios";
 
 
-const AuthorBlogs = () => {
+const AuthorBlogs = ({ loggedIn, setLoggedIn }: { loggedIn: boolean, setLoggedIn: (state: boolean) => void }) => {
 
     const location = useLocation();
     const { id } = useParams<string>();
@@ -12,6 +12,8 @@ const AuthorBlogs = () => {
 
     const [authorBlogs, setAuthorBlogs] = useState<any>([]);
     const [isActive, setisActive] = useState('Home')
+
+    const [user, setUser] = useState<any>();
 
 
     useEffect(() => {
@@ -28,10 +30,13 @@ const AuthorBlogs = () => {
             if (response.status === 200) {
                 console.log("Response data Blogs: ", response.data);
                 setAuthorBlogs(response.data)
+                setLoggedIn(true)
+                console.log("isLogged :", loggedIn)
             }
         } catch (error: any) {
             console.log("Error: ", error.message);
             setAuthorBlogs([])
+            setLoggedIn(false)
             console.log("changed", authorBlogs);
         }
     }
@@ -39,6 +44,9 @@ const AuthorBlogs = () => {
 
     useEffect(() => {
         fetchUserBlogs();
+        const currentUser = localStorage.getItem("userId") || '';
+        console.log("Current LoggedIn User: ", currentUser);
+        setUser(currentUser);
     }, [id])
 
 
@@ -65,7 +73,7 @@ const AuthorBlogs = () => {
 
                                 <div className='col-span-8 h-full'>
                                     <div
-                                        key={blog.id}
+                                        key={blog._id}
                                         className='pt-0 h-full flex flex-col justify-between'
                                     >
                                         <div className="flex items-center">
@@ -74,13 +82,34 @@ const AuthorBlogs = () => {
 
                                         <div className="h-full flex flex-col justify-between">
                                             <span className='line-clamp-2 text-gray-700 text-lg my-3.5'>Creating a multilingual website with Next.js enhances the user experience and boosts SEO by providing content in native languages. It helps ashdgsa dasdhsagd sadjsadh gaksghd sadkajsgdasd asjdsagd asdkj</span>
-                                            <span className='font-medium ml-auto'>
-                                                {new Date(blog.createdAt).toLocaleDateString("en-US", {
-                                                    month: "short",
-                                                    day: "2-digit",
-                                                    year: "numeric"
-                                                })}
-                                            </span>
+                                            {user === id ? (
+                                                <>
+                                                    <div className="flex justify-between items-center mb-0.5">
+                                                        {loggedIn ? (
+                                                            <Link to={`/edit-blog/${blog._id}`} className="bg-green-500/95 rounded-xs font-medium text-white px-6 py-1">Edit</Link>
+                                                        ) : (
+                                                            <Link to={`/login`} className="bg-green-500/95 rounded-xs font-medium text-white px-6 py-1">Edit</Link>
+                                                        )}
+                                                        <span className='font-medium'>
+                                                            {new Date(blog.createdAt).toLocaleDateString("en-US", {
+                                                                month: "short",
+                                                                day: "2-digit",
+                                                                year: "numeric"
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span className='font-medium ml-auto'>
+                                                        {new Date(blog.createdAt).toLocaleDateString("en-US", {
+                                                            month: "short",
+                                                            day: "2-digit",
+                                                            year: "numeric"
+                                                        })}
+                                                    </span>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
 

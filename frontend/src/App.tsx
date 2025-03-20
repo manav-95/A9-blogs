@@ -15,6 +15,7 @@ import { useState } from 'react';
 
 
 import './App.css'
+import EditBlog from './pages/EditBlog.tsx';
 
 
 
@@ -38,9 +39,11 @@ function App() {
             {/* <Route path='/followers/:authorFollowers' element={<Followers />} /> */}
 
             <Route path='/profile' element={<ProfileLayout />}>
-              <Route index path='/profile/:id' element={<AuthorBlogs />} />
+              <Route index path='/profile/:id' element={<AuthorBlogs loggedIn={loggedIn} setLoggedIn={setLoggedIn} />} />
               <Route path='/profile/:type/:id' element={<Followers />} />
             </Route>
+
+            <Route path='/edit-blog/:id' element={<EditBlog />} />
 
             {/* Authencation Pages Routes */}
             <Route path='/register' element={<Registration />} />
