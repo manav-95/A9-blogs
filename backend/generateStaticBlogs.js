@@ -31,11 +31,12 @@ const generateBlogs = async () => {
     blogs.forEach((blog) => {
       const filePath = path.join(outputDir, `${blog._id}.html`);
 
-      // Check if the file already exists, if yes , skip it.
-      if (fs.existsSync(filePath)) {
-        console.log(`Skipping: ${blog._id}.html (Already Exists)`);
-        return;
-      }
+     // If the file exists, update it; otherwise, create a new one
+     if (fs.existsSync(filePath)) {
+      console.log(`Updating: ${blog._id}.html`);
+    } else {
+      console.log(`Creating: ${blog._id}.html`);
+    }
 
       const blogHTML = `
       <!DOCTYPE html>
@@ -57,7 +58,7 @@ const generateBlogs = async () => {
               <img class="h-16 w-16 rounded-full object-cover object-center" src="${blog.authorImage}" alt="profile image">
               <div class="flex flex-col items-start justify-start -space-y-1">
                 <span class="text-2xl font-medium flex items-center gap-x-4">${blog.author}</span>
-                <span class=" text-base font-medium text-gray-600">${blog.authorFollowers} followers</span>
+                <span class="text-base font-medium text-gray-600">${blog.authorFollowers} followers</span>
               </div>
             </div>
             <span class="text-lg font-medium self-end text-gray-800">${blog.createdAt}</span>
@@ -65,8 +66,8 @@ const generateBlogs = async () => {
 
          <hr class="border">
 
-           <div class="flex justify-center items-center aspect-[3/2]">
-          <img class="aspect-[3/2] object-fill bg-gray-50 my-10 rounded-md" src="${blog.imageUrl}" alt="Blog Image" />
+           <div class="flex justify-center items-center w-full">
+          <img class="aspect-[3/2] w-full object-cover bg-gray-50 my-10 rounded-md" src="${blog.imageUrl}" alt="Blog Image" />
           </div>
           <div class="tiptap-editor">
             ${blog.content}

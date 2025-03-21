@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import axios from "axios";
+import { SquarePen, Trash2 } from "lucide-react";
 
 
 const AuthorBlogs = ({ loggedIn, setLoggedIn }: { loggedIn: boolean, setLoggedIn: (state: boolean) => void }) => {
@@ -41,6 +42,19 @@ const AuthorBlogs = ({ loggedIn, setLoggedIn }: { loggedIn: boolean, setLoggedIn
         }
     }
 
+    const deleteBlog = async (id: any) => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this blog ?");
+        if (!confirmDelete) return;
+
+        try {
+            await axios.delete(`http://localhost:5000/api/blogs/blog/${id}`);
+            setAuthorBlogs((prevBlogs: any) => prevBlogs.filter((blog: any) => blog._id !== id));
+            alert("Blog deleted successfully!");
+        } catch (error) {
+            console.error("Error deleting blog:", error);
+        }
+    }
+
 
     useEffect(() => {
         fetchUserBlogs();
@@ -62,7 +76,7 @@ const AuthorBlogs = ({ loggedIn, setLoggedIn }: { loggedIn: boolean, setLoggedIn
                 {isActive === "Home" && authorBlogs.length > 0 &&
                     <div className='flex flex-col px-4'>
                         {authorBlogs?.map((blog: any) => (
-                            <Link to={`http://localhost:5000/blogs/${blog._id}.html`} className='grid grid-cols-12 gap-6 items-start border-b-2 pb-6 mb-6'>
+                            <a target="_blank" href={`http://localhost:5000/blogs/${blog._id}.html`} className='grid grid-cols-12 gap-6 items-start border-b-2 pb-6 mb-6'>
 
                                 <div className='col-span-4 px-0 h-full'>
                                     <img
@@ -86,9 +100,15 @@ const AuthorBlogs = ({ loggedIn, setLoggedIn }: { loggedIn: boolean, setLoggedIn
                                                 <>
                                                     <div className="flex justify-between items-center mb-0.5">
                                                         {loggedIn ? (
-                                                            <Link to={`/edit-blog/${blog._id}`} className="bg-green-500/95 rounded-xs font-medium text-white px-6 py-1">Edit</Link>
+                                                            <div className="flex space-x-2">
+                                                                <Link to={`/edit-blog/${blog._id}`} className="bg-green-500/95 rounded-xs font-medium text-white px-4 py-1.5"><SquarePen /></Link>
+                                                                <button onClick={(e) => { e.preventDefault(); deleteBlog(blog._id); }}  className="flex bg-red-500/95 rounded-xs font-medium text-white px-4 py-1.5"> <Trash2 /></button>
+                                                            </div>
                                                         ) : (
+                                                            <div className="flex space-x-2">
                                                             <Link to={`/login`} className="bg-green-500/95 rounded-xs font-medium text-white px-6 py-1">Edit</Link>
+                                                            <Link to={`/login`} className="flex bg-red-500/95 rounded-xs font-medium text-white px-4 py-1.5"> <Trash2 /></Link>
+                                                            </div>
                                                         )}
                                                         <span className='font-medium'>
                                                             {new Date(blog.createdAt).toLocaleDateString("en-US", {
@@ -116,7 +136,7 @@ const AuthorBlogs = ({ loggedIn, setLoggedIn }: { loggedIn: boolean, setLoggedIn
 
                                 </div>
 
-                            </Link>
+                            </a>
                         ))}
                     </div>
                 }

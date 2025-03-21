@@ -5,11 +5,19 @@ import upload from '../middlewares/upload.js'
 import auth from '../middlewares/auth.js';
 import generateBlogs from '../generateStaticBlogs.js'
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+
 import generateAccessToken from '../controllers/authController.js'
 import User from '../models/User.js'
 
 dotenv.config();
 const router = express.Router();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Create a new blog
 router.post("/create-blog", auth, upload.single("image"), async (req, res) => {
@@ -39,22 +47,27 @@ router.post("/create-blog", auth, upload.single("image"), async (req, res) => {
 });
 
 
-router.post('/blog/:id', upload.single("image"), async (req, res) => {
+router.put('/blog/:id', upload.single("image"), async (req, res) => {
     try {
         const { id } = req.params;
-        let editedBlog = await Blog.findById(id);
-        const { title, content, tags } = req.body;
-
-        if (!title || !content || !tags.length) {
-            return res.status(400).json({ error: "All fields are required" });
+        const {title, content, tags} = req.body;
+        const existingBlog = await Blog.findById(id);
+        if (!existingBlog) {
+            return res.status(404).json({ error: "Blog not found" });
         }
-        const imageUrl = req.body.image
-
-        editedBlog = new Blog({ title, content, tags, image: imageUrl, userId: req.body.userId });
-        await editedBlog.save();
+        
+        // Update fields
+        existingBlog.title = title;
+        existingBlog.content = content;
+        existingBlog.tags = tags;
+        if (req.file) {
+            existingBlog.image = req.file.filename; // Only update image if a new file is uploaded
+        }
+        
+        await existingBlog.save();
         generateBlogs();
-
-        res.status(201).json({ message: "Blog Edited successfully!", blog: editedBlog, imageUrl: `/uploads/${imageUrl}` });
+        
+        res.status(200).json({ message: "Blog updated successfully!", blog: existingBlog });
     } catch (error) {
         console.error("❌ Error saving blog:", error.message, error); // Log full error
         res.status(500).json({ error: error.message });
@@ -62,7 +75,28 @@ router.post('/blog/:id', upload.single("image"), async (req, res) => {
 });
 
 
+// Delete Blog By Id
+router.delete('/blog/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleteBlog = await Blog.findByIdAndDelete(id);
+        if (!deleteBlog) return res.status(404).json({ message: "Blog not found" });
 
+        // Defining the static file path 
+        const filePath = path.join(__dirname, '..', 'public', 'blogs', `${id}.html`);
+
+        // Check if the static file exists and delete it
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            console.log(`Deleted static file: ${filePath}`);
+        }
+
+       return res.status(200).json({ message: "Blog and static file deleted Successfully" })
+    } catch (error) {
+        console.error("Error deleting blog:", error);
+        res.status(500).json({ message: "Server Error", error });
+    }
+})
 
 
 

@@ -21,11 +21,12 @@ import StarterKit from '@tiptap/starter-kit'
 
 
 import { Bold, ChevronDown, Heading1, Heading2, Heading3, Heading4, Heading5, Highlighter, Italic, Link, Palette, Pilcrow, Redo, Strikethrough, UnderlineIcon, Undo, TextQuote, EllipsisVertical, AlignCenter, AlignLeft, AlignRight, AlignJustify, Superscript, Subscript, List, ListOrdered, X } from 'lucide-react'
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 
 const EditBlog = () => {
 
     const { id } = useParams();
+    const location = useLocation();
 
     const [tags, setTags] = useState<string[]>([]);
     const [inputValue, setInputValue] = useState("");
@@ -47,54 +48,69 @@ const EditBlog = () => {
     const [sizeDropdown, setSizeDropdown] = useState(false);
     const [alignDropdown, setAlignDropdown] = useState(false);
     const [activeIcon, setActiveIcon] = useState<any>(Pilcrow);
-    const [preview, setPreview] = useState<any>(null);
-    const [image, setImage] = useState<any>(null);
+    const [preview, setPreview] = useState<any>();
+    const [image, setImage] = useState<any>();
+
+
+
 
     // let updatedTags = [...tags];
     // let processedTags = []
 
     const fetchBlog = async () => {
         if (!id || id === ":id") return;
+            const { data } = await axios.get(`http://localhost:5000/api/blogs/blog/${id}`);
+            if (data) {
+                console.log("Founded Blog: ", data)
+                setFetchedBlog(data)
+                setFormData({ title: data.title, tags: data.tags })
+                setFetchedBlogContent(data.content)
+                if (data.image) {
+                    setImage(data.image)
+                    setPreview(`http://localhost:5000/uploads/${data.image}`);
+                    
+                    console.log("Image: ", image)
+                    console.log(fetchedImage)
 
-        const { data } = await axios.get(`http://localhost:5000/api/blogs/blog/${id}`);
-        if (data) {
-            console.log("Founded Blog: ", data)
-            setFetchedBlog(data)
-            setFormData({ title: data.title, tags: data.tags })
-            setFetchedBlogContent(data.content)
-            if (data.image) {
-                setFetchedImage(data.image)
-                setPreview(`http://localhost:5000/uploads/${data.image}`);
-            }
-            
-            console.log("Image: ", image)
-            
-            
-            // setFetchedTags(data.tags);
-
-            //console.log("Fetched Tags: ", fetchedTags)
-            let updatedTags = [...data.tags, ...tags];
-            let processedTags = updatedTags.flatMap(tag => {
-                try {
-                    return JSON.parse(tag); // Parse JSON if valid
-                } catch {
-                    return tag; // Return as is if not JSON
                 }
-            });
 
-            console.log("Processed Tags: ", processedTags)
+                // setFetchedTags(data.tags);
 
-            setTags(processedTags)
+                //console.log("Fetched Tags: ", fetchedTags)
+                let updatedTags = [...data.tags, ...tags];
+                let processedTags = updatedTags.flatMap(tag => {
+                    try {
+                        return JSON.parse(tag); // Parse JSON if valid
+                    } catch {
+                        return tag; // Return as is if not JSON
+                    }
+                });
+
+                console.log("Processed Tags: ", processedTags)
+
+                setTags(processedTags)
 
 
-            editor?.commands.setContent(data.content);
+                // editor?.commands.setContent(data.content);           
+            
 
         }
     }
 
     useEffect(() => {
-        fetchBlog();
-    }, [id])
+        console.log("Updated Image:", image);
+    }, [image]);
+
+
+
+    useEffect(() => {
+        if (id && id !== ":id") {
+            fetchBlog();
+        }
+    }, [location.pathname])
+
+
+  
 
 
 
@@ -142,6 +158,12 @@ const EditBlog = () => {
     });
 
 
+    useEffect(() => {
+        if (editor && fetchedBlogContent) {
+            editor.commands.setContent(fetchedBlogContent);
+            // console.log("Editor content loaded:", fetchedBlogContent);
+        }
+    }, [editor, fetchedBlogContent]);
 
     if (!editor) {
         return null
@@ -209,6 +231,7 @@ const EditBlog = () => {
     useEffect(() => {
         setActiveIcon(getActiveIcon());
     }, [editor.state]);
+    
 
     // Function to get the currently active text size or default to "Medium"
     const getActiveTextSize = () => {
@@ -352,7 +375,7 @@ const EditBlog = () => {
 
 
 
-            const response = await axios.post(`http://localhost:5000/api/blogs/blog/${id}`, formdata,
+            const response = await axios.put(`http://localhost:5000/api/blogs/blog/${id}`, formdata,
                 {
                     headers: {
                         "Content-Type": "multipart/form-data",
@@ -439,7 +462,7 @@ const EditBlog = () => {
                                     }`}
                                 disabled={!formData.title.trim() || tags.length === 0}
                             >
-                                Publish
+                                Update
                             </button>
                         </div>
                     </form>
@@ -451,7 +474,7 @@ const EditBlog = () => {
 
                     {preview && (
                         <div className="mt-2 w-full ">
-                            <img src={preview} alt="Preview" className="w-full aspect -[7/4] object-top object-contain rounded" />
+                            <img src={preview} alt="Preview" className="w-full aspect-[7/4] object-top object-contain rounded" />
                         </div>
                     )}
 

@@ -34,7 +34,7 @@ const Blogs = () => {
         <div className='flex flex-col space-y-4'>
           {allBlogs.map((blog: any) => (
 
-            <Link to={`http://localhost:5000/blogs/${blog._id}.html`}>
+            <a target='_blank' href={`http://localhost:5000/blogs/${blog._id}.html`}>
               <div className='grid grid-cols-12 gap-2 items-start border-b py-6'>
                 <div key={blog?._id} className='col-span-8 '>
                   <Link to={`/profile/${blog.authorId}`}>
@@ -59,7 +59,7 @@ const Blogs = () => {
                   <img src={`${blog.imageUrl}`} alt="Blog Image" className='aspect-[3/2] object-cover rounded bg-gray-50' />
                 </div>
               </div>
-            </Link>
+            </a>
 
           ))}
         </div>
