@@ -50,12 +50,12 @@ router.post("/create-blog", auth, upload.single("image"), async (req, res) => {
 router.put('/blog/:id', upload.single("image"), async (req, res) => {
     try {
         const { id } = req.params;
-        const {title, content, tags} = req.body;
+        const { title, content, tags } = req.body;
         const existingBlog = await Blog.findById(id);
         if (!existingBlog) {
             return res.status(404).json({ error: "Blog not found" });
         }
-        
+
         // Update fields
         existingBlog.title = title;
         existingBlog.content = content;
@@ -63,10 +63,10 @@ router.put('/blog/:id', upload.single("image"), async (req, res) => {
         if (req.file) {
             existingBlog.image = req.file.filename; // Only update image if a new file is uploaded
         }
-        
+
         await existingBlog.save();
         generateBlogs();
-        
+
         res.status(200).json({ message: "Blog updated successfully!", blog: existingBlog });
     } catch (error) {
         console.error("❌ Error saving blog:", error.message, error); // Log full error
@@ -91,7 +91,7 @@ router.delete('/blog/:id', async (req, res) => {
             console.log(`Deleted static file: ${filePath}`);
         }
 
-       return res.status(200).json({ message: "Blog and static file deleted Successfully" })
+        return res.status(200).json({ message: "Blog and static file deleted Successfully" })
     } catch (error) {
         console.error("Error deleting blog:", error);
         res.status(500).json({ message: "Server Error", error });
@@ -104,6 +104,7 @@ router.delete('/blog/:id', async (req, res) => {
 router.get("/", async (req, res) => {
     try {
         const blogs = await Blog.find()
+        .sort({ createdAt: -1 })
             .populate('userId', 'username email profileImage followers')
             .exec();
         const blogsList = blogs.map(blog => ({
@@ -132,10 +133,36 @@ router.get("/", async (req, res) => {
 });
 
 
+
+// Search Blogs
+router.get("/search", async (req, res) => {
+    try {
+        const { query } = req.query;
+        if (!query) return res.status(400).json({ message: "Query is required" })
+
+        // find blogs matching title, tags or content 
+        const blogs = await Blog.find({
+            $or: [
+                { title: { $regex: query, $options: "i" } },
+                { tags: { $regex: query, $options: "i" } },
+            ]
+        })
+        .sort({ createdAt: -1 })
+        .populate('userId', 'username followers _id profileImage')
+        .select("title tags content image _id createdAt")
+        res.json(blogs);
+    } catch (error) {
+        console.error("Search Error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+})
+
+
+
 // Get Blogs of an User
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
-    const userBlogs = await Blog.find({ userId: id });
+    const userBlogs = await Blog.find({ userId: id }).sort({ createdAt: -1 });
     if (!userBlogs.length) {
         return res.status(404).json({ message: "No blogs found for this user" });
     }
@@ -163,6 +190,7 @@ router.get('/blog/:id', async (req, res) => {
         res.status(500).json({ message: "Server Error" })
     }
 })
+
 
 
 

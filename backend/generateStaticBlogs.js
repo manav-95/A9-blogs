@@ -44,6 +44,7 @@ const generateBlogs = async () => {
       <head>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap">
         <script src="https://cdn.tailwindcss.com"></script>
+          <link rel="icon" type="image/svg+xml" href="${blog.imageUrl}" />
         <link rel="stylesheet" href="blog.css">
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">

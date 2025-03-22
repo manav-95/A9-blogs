@@ -16,6 +16,7 @@ import { useState } from 'react';
 
 import './App.css'
 import EditBlog from './pages/EditBlog.tsx';
+import SearchedBlogs from './pages/SearchedBlogs.tsx';
 
 
 
@@ -44,6 +45,8 @@ function App() {
             </Route>
 
             <Route path='/edit-blog/:id' element={<EditBlog />} />
+            <Route path='/search' element={<SearchedBlogs />} />
+
 
             {/* Authencation Pages Routes */}
             <Route path='/register' element={<Registration />} />

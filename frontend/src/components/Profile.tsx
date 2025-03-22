@@ -8,6 +8,7 @@ type User = {
     _id: String,
     username: String,
     profileImage: String,
+    followers : [],
 }
 
 type ProfileProps = {
@@ -21,7 +22,7 @@ const Profile = ({ isFollowing, setIsFollowing }: ProfileProps) => {
     const [author, setAuthor] = useState<any>({});
     const [profileImage, setProfileImage] = useState<any>();
     // const [isFollowing, setIsFollowing] = useState<boolean>();
-     const [followersCount, setFollowersCount] = useState<number>();
+    const [followersCount, setFollowersCount] = useState<number>();
     const [followingList, setFollowingList] = useState<User[]>([]);
 
 
@@ -59,7 +60,7 @@ const Profile = ({ isFollowing, setIsFollowing }: ProfileProps) => {
                 const isCurrentlyFollowing = response.data.followings.some(
                     (user: any) => user._id === id
                 );
-    
+
                 setIsFollowing(isCurrentlyFollowing);
                 console.log("isCurrentlyFollowing: ", isCurrentlyFollowing)
             }
@@ -85,8 +86,8 @@ const Profile = ({ isFollowing, setIsFollowing }: ProfileProps) => {
             console.log("followed: ", data);
 
             setIsFollowing(true);
-           await checkFollowingStatus();
-           await fetchUser();
+            await checkFollowingStatus();
+            await fetchUser();
 
 
         } catch (error) {
@@ -161,22 +162,25 @@ const Profile = ({ isFollowing, setIsFollowing }: ProfileProps) => {
 
             <hr className="my-4 border" />
 
-            {followingList?.length > 0 &&
+            {followingList?.length > 0 ? (
                 <div className="pr-4">
                     <h1 className="text-2xl font-medium">Following</h1>
-                    <div className="flex flex-col  justify-center space-y-2 mt-4">
+                    <div className="flex flex-col  justify-center space-y-1.5 mt-4">
                         {followingList.slice(0, 5).map((followingUser) => (
                             <div className="flex justify-between items-center">
                                 <Link to={`/profile/${followingUser?._id}`}>
                                     <div
-                                        className="group flex items-center space-x-3 hover:underline w-full"
+                                        className="group flex items-center space-x-3 w-full"
                                     >
                                         <img
                                             src={`http://localhost:5000/uploads/${followingUser.profileImage}`}
                                             alt={'follower Profile Image'}
-                                            className="h-12 w-12 rounded-full object-cover aspect-square border"
+                                            className="h-12 w-12 rounded-xs object-cover aspect-square border border-gray-400 shadow"
                                         />
-                                        <h1 className="text-gray-600 group-hover:text-gray-900 text-base">{followingUser.username}</h1>
+                                        <div className="flex flex-col justify-between">
+                                        <h1 className="text-lg group-hover:underline">{followingUser.username}</h1>
+                                        <span className="text-[#242424] opacity-[0.6] text-sm">{followingUser.followers.length} Followers</span>
+                                        </div>
                                     </div>
                                 </Link>
                                 {/* <button><BsThreeDots className="h-6 w-6 text-gray-500 hover:text-gray-900" /></button> */}
@@ -189,6 +193,11 @@ const Profile = ({ isFollowing, setIsFollowing }: ProfileProps) => {
                     </div>
 
                 </div>
+            ) : (
+                <div className="flex justify-center items-center">
+                    <h1>The Author Not followed any other Author</h1>
+                </div>
+                )
             }
 
         </>

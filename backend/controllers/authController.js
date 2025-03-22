@@ -74,10 +74,17 @@ export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     let existingUser = await User.findOne({ email }).select('email password token');
+    if (!existingUser) {
+     console.log("Existing User Not Found")    
+    }
+    
+    console.log(existingUser)
     const ValidUser = bcrypt.compareSync(password, existingUser.password);
+
+
     if (ValidUser) {
         let existingToken = existingUser.token;
-        if (existingToken != undefined) {
+        if (existingToken !== undefined) {
             const exp = jwt.decode(existingToken);
             const date = Date.now();
             if (date >= exp * 1000) {
@@ -99,7 +106,7 @@ export const loginUser = async (req, res) => {
 // Get User By Id
 export const getUserById = async (req, res) => {
     const { id } = req.params;
-    
+
     // ✅ Check if the ID is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ message: "Invalid user ID format" });
@@ -107,10 +114,10 @@ export const getUserById = async (req, res) => {
 
     try {
         const user = await User.findById(id)
-        .populate("followers", 'username profileImage bio')
-        .populate("followings", 'username profileImage bio')
-        .exec();
-        
+            .populate("followers", 'username profileImage bio')
+            .populate("followings", 'username profileImage bio followers')
+            .exec();
+
         if (!user) {
             return res.status(404).json({ message: "User Not Found" })
         }
