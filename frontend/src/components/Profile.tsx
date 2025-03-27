@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 // import { BsThreeDots } from "react-icons/bs";
 import axios from "axios";
@@ -8,7 +8,7 @@ type User = {
     _id: String,
     username: String,
     profileImage: String,
-    followers : [],
+    followers: [],
 }
 
 type ProfileProps = {
@@ -17,7 +17,9 @@ type ProfileProps = {
 };
 
 
-const Profile = ({ isFollowing, setIsFollowing }: ProfileProps) => {
+const Profile = ({ isFollowing, setIsFollowing }: ProfileProps ) => {
+
+    const navigate = useNavigate();
 
     const [author, setAuthor] = useState<any>({});
     const [profileImage, setProfileImage] = useState<any>();
@@ -141,6 +143,12 @@ const Profile = ({ isFollowing, setIsFollowing }: ProfileProps) => {
                     <span className="text-gray-500 text-base font-medium">{author.bio}</span>
                 </div>
 
+                {id === currentUserId && (
+                    <div className="mt-4">
+                        <button onClick={() => navigate('/reset-password')} className="w-full py-1.5 px-4 bg-blue-500/95 text-white rounded-xs">Reset Password</button>
+                    </div>
+                )}
+
                 {id !== currentUserId && (
                     <div className="flex justify-end mt-3">
                         <button
@@ -178,8 +186,8 @@ const Profile = ({ isFollowing, setIsFollowing }: ProfileProps) => {
                                             className="h-12 w-12 rounded-xs object-cover aspect-square border border-gray-400 shadow"
                                         />
                                         <div className="flex flex-col justify-between">
-                                        <h1 className="text-lg group-hover:underline">{followingUser.username}</h1>
-                                        <span className="text-[#242424] opacity-[0.6] text-sm">{followingUser.followers.length} Followers</span>
+                                            <h1 className="text-lg group-hover:underline">{followingUser.username}</h1>
+                                            <span className="text-[#242424] opacity-[0.6] text-sm">{followingUser.followers.length} Followers</span>
                                         </div>
                                     </div>
                                 </Link>
@@ -197,7 +205,7 @@ const Profile = ({ isFollowing, setIsFollowing }: ProfileProps) => {
                 <div className="flex justify-center items-center">
                     <h1>The Author Not followed any other Author</h1>
                 </div>
-                )
+            )
             }
 
         </>

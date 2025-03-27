@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
 
+
 dotenv.config();
 
 // generate access Token
@@ -47,59 +48,43 @@ export const registerUser = async (req, res) => {
     }
 }
 
-// Login User
-// export const loginUser = async (req, res) => {
-//     const { email, password } = req.body;
-
-//     try {
-//         const user = await User.findOne({ email });
-//         if (!user) return res.status(400).json({ message: "User Not Found" })
-
-//         const isPasswordValid = await bcrypt.compare(password, user.password);
-
-//         if (!isPasswordValid) return res.status(400).json({ message: "Invalid email or password" })
-
-//         const accessToken = generateAccessToken(user);
-
-//         user.token = accessToken;
-//         await user.save(); 
-
-//         res.json({ accessToken })
-//     } catch (error) {
-//         res.status(500).json({ message: "Server Error" });
-//     }
-// };
 
 export const loginUser = async (req, res) => {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    let existingUser = await User.findOne({ email }).select('email password token');
-    if (!existingUser) {
-     console.log("Existing User Not Found")    
-    }
-    
-    console.log(existingUser)
-    const ValidUser = bcrypt.compareSync(password, existingUser.password);
-
-
-    if (ValidUser) {
-        let existingToken = existingUser.token;
-        if (existingToken !== undefined) {
-            const exp = jwt.decode(existingToken);
-            const date = Date.now();
-            if (date >= exp * 1000) {
-                const newtoken = generateAccessToken(existingUser.id);
-                existingUser = User.findByIdAndUpdate(existingUser.id, { token: newtoken }, { new: true });
-            }
-        } else {
-            const newtoken = generateAccessToken(existingUser);
-            existingUser = await User.findByIdAndUpdate(existingUser.id, { token: newtoken }, { new: true });
-
+        let existingUser = await User.findOne({ email }).select('email password token');
+        if (!existingUser) {
+            console.log("Existing User Not Found")
+            return res.status(404).json({ message: "User Not Found" })
         }
-        const user = existingUser.toObject();
-        return res.status(200).json({ user });
+
+        console.log(existingUser)
+        const ValidUser = bcrypt.compareSync(password, existingUser.password);
+
+        if (ValidUser) {
+            let existingToken = existingUser.token;
+            if (existingToken !== undefined) {
+                const decodedToken = jwt.decode(existingToken);
+                const exp = decodedToken.exp
+                const date = Date.now();
+                if (date >= exp * 1000) {
+                    const newtoken = generateAccessToken(existingUser._id);
+                    existingUser = await User.findByIdAndUpdate(existingUser._id, { token: newtoken }, { new: true });
+                }
+            } else {
+                const newtoken = generateAccessToken(existingUser._id);
+                existingUser = await User.findByIdAndUpdate(existingUser._id, { token: newtoken }, { new: true });
+
+            }
+            const user = existingUser.toObject();
+            return res.status(200).json({ user });
+        } else {
+            return res.status(401).json({ message: "Invalid Credentials" })
+        }
+    } catch (error) {
+        console.error("Error Logging User: ", error.message)
     }
-    throw new Error('Invalid Credentials');
 }
 
 
@@ -127,6 +112,44 @@ export const getUserById = async (req, res) => {
     } catch (error) {
         console.error("❌ Error fetching user:", error.message);
         res.status(500).json({ message: 'Server Error' });
+    }
+}
+
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { token, oldPassword, newPassword } = req.body;
+
+        if (!oldPassword || !newPassword) {
+            console.error("All Fields are Required");
+            return res.status(400).json({ message: "All Fields Are Required" })
+        }
+
+        if (!token) return res.status(401).json({ message: "Unauthorized Token not provided" })
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+
+        if (!decoded) return res.status(400).json({ message: "Token is Expired or Invalid Token" })
+
+        console.log("Decoded Data: ", decoded);
+
+        const user = await User.findById(decoded.id);
+        if (!user) return res.status(404).json({ message: "User Not Found" })
+
+        const ValidUser = bcrypt.compareSync(oldPassword, user.password);
+
+        if (!ValidUser) {
+            return res.status(401).json({ message: "Wrong old Password" })
+        }
+
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedNewPassword;
+
+        await user.save();
+        return res.status(201).json({ message: "Password Reset/Changed Successfully" })
+
+    } catch (error) {
+        res.status(500).json({ error: "Something went wrong" });
     }
 }
 

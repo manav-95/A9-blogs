@@ -17,6 +17,7 @@ import { useState } from 'react';
 import './App.css'
 import EditBlog from './pages/EditBlog.tsx';
 import SearchedBlogs from './pages/SearchedBlogs.tsx';
+import ResetPassword from './pages/ResetPassword.tsx';
 
 
 
@@ -51,6 +52,7 @@ function App() {
             {/* Authencation Pages Routes */}
             <Route path='/register' element={<Registration />} />
             <Route path='/login' element={<Login setLoggedIn={setLoggedIn}/>} />
+            <Route path='/reset-password' element={<ResetPassword />} />
           </Routes>
         </div>
       </Router>

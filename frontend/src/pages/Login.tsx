@@ -119,6 +119,9 @@ const Login = ({ setLoggedIn }: { setLoggedIn: (state: boolean) => void }) => {
                     <Link to={'/register'} className="mt-3 text-center hover:text-blue-500 transition-colors">
                         Don't have an account? Register
                     </Link>
+                    <Link to={'/reset-password'} className="mt-3 text-center hover:text-blue-500 transition-colors">
+                        Forgot password?
+                    </Link>
                 </form>
             </div>
         </div>
