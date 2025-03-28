@@ -4,8 +4,13 @@ import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
 
+import { sendOTP } from '../utils/emailService.js'
+import crypto from "crypto";
 
 dotenv.config();
+
+// Temporary storage for OTPs (use Redis for production)
+const otpStore = new Map();
 
 // generate access Token
 const generateAccessToken = (userId) => {
@@ -13,7 +18,6 @@ const generateAccessToken = (userId) => {
     return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRY })
 
 }
-
 
 // Register User
 export const registerUser = async (req, res) => {
@@ -48,7 +52,7 @@ export const registerUser = async (req, res) => {
     }
 }
 
-
+// Login USer
 export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -87,7 +91,6 @@ export const loginUser = async (req, res) => {
     }
 }
 
-
 // Get User By Id
 export const getUserById = async (req, res) => {
     const { id } = req.params;
@@ -115,32 +118,73 @@ export const getUserById = async (req, res) => {
     }
 }
 
+// Send Reset Password OTP
+export const sendResetOTP = async (req, res) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
 
+        // Generate otp
+        const otp = crypto.randomInt(1000, 9999); // 4-digit otp
+        otpStore.set(email, { otp, expiresAt: Date.now() + 10 * 60 * 1000 }); // valid for 10 minutes
+        console.log("OTP STORE: ", JSON.stringify(Object.fromEntries(otpStore), null, 2));
+        // send OTP via email
+        await sendOTP(email, otp);
+        res.status(200).json({ message: `OTP sent to email ${email}` })
+
+    } catch (error) {
+        console.error("Error sending OTP:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+// Verify OTP
+export const verifyOTP = async (req, res) => {
+    const { otp, email } = req.body;
+
+    try {
+        console.log("OTP STORE AT VERIFICATION:", otpStore);
+
+        const getstoredOTP = otpStore.get(email);
+
+        if (!getstoredOTP) {
+            return res.status(400).json({ message: "Invalid or expired OTP" });
+        }
+
+        const storedOTP = getstoredOTP.otp;
+
+        if (storedOTP === Number(otp)) {
+            console.log("OTP VERIFIED SUCCESSFULLY");
+
+            // Remove OTP from store after successful verification
+            otpStore.delete(email);
+
+            return res.status(200).json({ message: "OTP verified successfully" });
+        } else {
+            return res.status(400).json({ message: "Incorrect OTP" });
+        }
+
+    } catch (error) {
+        console.error("Error verifying OTP:", error);
+        res.status(500).json({ message: "Failed to verify OTP" });
+    }
+};
+
+// Reset Password
 export const resetPassword = async (req, res) => {
     try {
-        const { token, oldPassword, newPassword } = req.body;
+        const { email, newPassword } = req.body;
 
-        if (!oldPassword || !newPassword) {
+        if (!email || !newPassword) {
             console.error("All Fields are Required");
             return res.status(400).json({ message: "All Fields Are Required" })
         }
 
-        if (!token) return res.status(401).json({ message: "Unauthorized Token not provided" })
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
-
-        if (!decoded) return res.status(400).json({ message: "Token is Expired or Invalid Token" })
-
-        console.log("Decoded Data: ", decoded);
-
-        const user = await User.findById(decoded.id);
+        const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ message: "User Not Found" })
-
-        const ValidUser = bcrypt.compareSync(oldPassword, user.password);
-
-        if (!ValidUser) {
-            return res.status(401).json({ message: "Wrong old Password" })
-        }
 
         const hashedNewPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashedNewPassword;
@@ -152,7 +196,6 @@ export const resetPassword = async (req, res) => {
         res.status(500).json({ error: "Something went wrong" });
     }
 }
-
 
 // Follow user
 export const followUser = async (req, res) => {
@@ -208,6 +251,5 @@ export const unfollowUser = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 }
-
 
 export default generateAccessToken;

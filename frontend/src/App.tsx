@@ -18,6 +18,7 @@ import './App.css'
 import EditBlog from './pages/EditBlog.tsx';
 import SearchedBlogs from './pages/SearchedBlogs.tsx';
 import ResetPassword from './pages/ResetPassword.tsx';
+import ResetPasswordByEmail from './pages/ResetPasswordByEmail.tsx';
 
 
 
@@ -52,7 +53,7 @@ function App() {
             {/* Authencation Pages Routes */}
             <Route path='/register' element={<Registration />} />
             <Route path='/login' element={<Login setLoggedIn={setLoggedIn}/>} />
-            <Route path='/reset-password' element={<ResetPassword />} />
+            <Route path='/reset-password' element={<ResetPasswordByEmail />} />
           </Routes>
         </div>
       </Router>
