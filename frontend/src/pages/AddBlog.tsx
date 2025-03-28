@@ -303,7 +303,7 @@ const BlogEditor = () => {
             console.log(finalData.userId)
 
             const token = localStorage.getItem('accessToken');
-     
+
 
 
             const response = await axios.post("http://localhost:5000/api/blogs/create-blog", formdata,
@@ -510,29 +510,30 @@ const BlogEditor = () => {
                                 </button>
 
                                 {sizeDropdown && (
-                                    <div className="absolute z-40 left-1/2 -translate-x-1/2 bg-white border p-2 rounded shadow w-44">
-                                        {textSizes.map((size, index) => {
-                                            const textStyle = editor.getAttributes("textStyle");
-                                            const currentSize = textStyle.fontSize || "16px"; // Default to 16px (Medium)
-                                            const isActive = currentSize === size.fontSize;
+                                     <div className="absolute z-40 left-1/2 -translate-x-1/2 bg-white border p-2 rounded shadow w-44">
+                                         {textSizes.map((size, index) => {
+                                             const textStyle = editor.getAttributes("textStyle");
+                                             const currentSize = textStyle.fontSize || "16px"; // Default to 16px (Medium)
+                                             const isActive = currentSize === size.fontSize;
+ 
+                                             return (
+                                                 <div key={index} className="w-full rounded">
+                                                     <button
+                                                         onClick={() => {
+                                                             editor.chain().focus().setFontSize(size.fontSize).run();
+                                                             setSizeDropdown(false);
+                                                         }}
+                                                         className={`w-full px-2 py-2 flex items-center justify-start rounded ${isActive ? "bg-gray-100 text-black" : "text-gray-500 hover:bg-gray-50"
+                                                             }`}
+                                                     >
+                                                         <span style={{ fontSize: size.fontSize }} className={`ml-2`}>{size.sizeName}</span>
+                                                     </button>
+                                                 </div>
+                                             );
+                                         })}
+                                     </div>
+                                 )}
 
-                                            return (
-                                                <div key={index} className="w-full rounded">
-                                                    <button
-                                                        onClick={() => {
-                                                            editor.chain().focus().setFontSize(size.fontSize).run();
-                                                            setSizeDropdown(false);
-                                                        }}
-                                                        className={`w-full px-2 py-2 flex items-center justify-start rounded ${isActive ? "bg-gray-100 text-black" : "text-gray-500 hover:bg-gray-50"
-                                                            }`}
-                                                    >
-                                                        <span style={{ fontSize: size.fontSize }} className={`ml-2`}>{size.sizeName}</span>
-                                                    </button>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
                             </div>
 
                             <button data-tooltip-id="blockquote-tooltip" onClick={() => editor?.chain().focus().toggleBlockquote().run()} className={`${editor?.isActive('blockquote') ? 'bg-gray-200 text-black rounded' : 'text-gray-500 hover:bg-gray-100 rounded'} px-4 py-2`}><TextQuote strokeWidth={3} color={'currentColor'} size={19} /></button>

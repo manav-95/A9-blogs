@@ -91,6 +91,7 @@ const ResetPasswordByEmail = () => {
                         newPassword: '',
                         confirmNewPassword: '',
                     });
+                    setSubmitting(false)
                 } else {
                     console.log("Error Sending OTP: ", error.message)
                 }
@@ -166,14 +167,17 @@ const ResetPasswordByEmail = () => {
 
                             <button
                                 type="submit"
-                                className="w-full bg-green-500 hover:bg-green-600 transition-colors text-white mt-3 py-2 px-4 rounded"
-                            >{submitting ? (
-                                <span className={`${submitting === true ? "animate-spin border-4 border-t-transparent border-white rounded-full w-6 h-6 inline-block" : ""}`}></span>
-                            ) : (
-                                "send OTP"
-                            )}
-
+                                disabled={submitting}
+                                className={`w-full bg-green-500 hover:bg-green-600 transition-colors text-white mt-3 py-2 px-4 rounded flex justify-center items-center ${submitting ? "opacity-50 cursor-not-allowed" : ""
+                                    }`}
+                            >
+                                {submitting ? (
+                                    <span className="animate-spin border-4 border-t-transparent border-white rounded-full w-6 h-6"></span>
+                                ) : (
+                                    "Send OTP"
+                                )}
                             </button>
+
                         </form>
                     </>
                 )}
