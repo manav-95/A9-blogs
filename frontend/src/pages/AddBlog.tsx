@@ -165,7 +165,7 @@ const BlogEditor = () => {
 
     // Function to get the currently active text size or default to "Medium"
     const getActiveTextSize = () => {
-        const textStyle = editor.getAttributes("textStyle");
+        const textStyle = editor.getAttributes("fontSize");
         return textSizes.find((size) => size.fontSize === textStyle.fontSize)?.sizeName || "Medium"; // Default to Medium
     };
 
@@ -512,7 +512,7 @@ const BlogEditor = () => {
                                 {sizeDropdown && (
                                      <div className="absolute z-40 left-1/2 -translate-x-1/2 bg-white border p-2 rounded shadow w-44">
                                          {textSizes.map((size, index) => {
-                                             const textStyle = editor.getAttributes("textStyle");
+                                             const textStyle = editor.getAttributes("fontSize");
                                              const currentSize = textStyle.fontSize || "16px"; // Default to 16px (Medium)
                                              const isActive = currentSize === size.fontSize;
  

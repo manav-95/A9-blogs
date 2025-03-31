@@ -70,7 +70,7 @@ const generateBlogs = async () => {
            <div class="flex justify-center items-center w-full">
           <img class="aspect-[3/2] w-full object-cover bg-gray-50 my-10 rounded-md" src="${blog.imageUrl}" alt="Blog Image" />
           </div>
-          <div class="tiptap-editor">
+          <div class="tiptap-editor max-w-5xl break-words">
             ${blog.content}
           </div>
         </div>

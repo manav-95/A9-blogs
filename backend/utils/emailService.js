@@ -18,9 +18,8 @@ export const sendOTP = async (email, otp) => {
             from: process.env.EMAIL_USER,
             to: email,
             subject: "Password Reset OTP",
-
             html: `
-  <!DOCTYPE html>
+ <!DOCTYPE html>
 <html>
 
 <head>
